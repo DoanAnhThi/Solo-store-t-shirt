@@ -13,6 +13,8 @@ router.register(r'contact', views.ContactViewSet, basename='contact')
 urlpatterns = [
     path('api/', include(router.urls)),
     path('health/', views.health_check, name='health_check'),
+    # Simple test endpoint - không cần authentication
+    path('api/test-order/', views.simple_test_order, name='simple_test_order'),
     # Auth endpoints
     path('api/auth/login/', views.auth_login, name='auth_login'),
     path('api/auth/logout/', views.auth_logout, name='auth_logout'),

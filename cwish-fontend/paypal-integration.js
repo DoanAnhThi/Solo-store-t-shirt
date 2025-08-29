@@ -3,12 +3,15 @@ class PayPalIntegration {
     constructor() {
         this.paypalClientId = 'AUTJCGZY2VvXmJIqCJ7kFO5DD_ESho40dm95S1XKJolyryezuz9XQJgFrKCDsR1YLUvWTItMq7B_jRVG'; // Thay thế bằng Client ID thực tế
         this.environment = 'sandbox'; // 'sandbox' cho testing, 'production' cho live
+        this.isTestMode = false; // Flag để track test mode
         this.init();
     }
 
     init() {
         // Load PayPal SDK
         this.loadPayPalSDK();
+
+        // PayPal Integration đã được khởi tạo
     }
 
     loadPayPalSDK() {
@@ -252,7 +255,7 @@ class PayPalIntegration {
             };
 
             // Gửi order đến backend
-            await this.sendOrderToBackend(orderData);
+            await this.sendOrderToBackend(orderData, this.isTestMode);
 
             // Lưu order vào localStorage
             this.saveOrderLocally(orderData);
@@ -266,9 +269,18 @@ class PayPalIntegration {
         }
     }
 
-    async sendOrderToBackend(orderData) {
+    async sendOrderToBackend(orderData, isTestModeOverride = null) {
         try {
-            const response = await fetch('http://localhost:8000/api/orders/create/', {
+            // Sử dụng endpoint test đơn giản cho nút test
+            const isTestMode = isTestModeOverride !== null ? isTestModeOverride : this.isTestMode;
+            const endpoint = isTestMode ? 'http://localhost:8000/api/test-order/' : 'http://localhost:8000/api/orders/create/';
+
+            console.log(`📡 Using endpoint: ${endpoint} (test mode: ${isTestMode})`);
+
+            console.log(`📤 Sending request to: ${endpoint}`);
+            console.log(`📦 Request data:`, orderData);
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -277,14 +289,32 @@ class PayPalIntegration {
                 body: JSON.stringify(orderData)
             });
 
+            console.log(`📥 Response status: ${response.status}`);
+            console.log(`📄 Response headers:`, [...response.headers.entries()]);
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                console.error(`❌ Backend error response: ${errorText}`);
+                throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
             }
 
-            return await response.json();
+            const responseData = await response.json();
+
+            // Log status từ Shirtigo API ra console
+            if (responseData.shirtigo_status) {
+                console.log(`🎯 Shirtigo API Status: ${responseData.shirtigo_status}`);
+                if (responseData.shirtigo_status === 500) {
+                    console.log(`❌ Shirtigo API thất bại! (Đây là lỗi từ Shirtigo, không phải backend của chúng ta)`);
+                } else if (responseData.shirtigo_status === 200 || responseData.shirtigo_status === 201) {
+                    console.log(`✅ Shirtigo API thành công!`);
+                }
+            }
+
+            console.log(`📄 Response data:`, responseData);
+            return responseData;
 
         } catch (error) {
-            console.log('Backend not available, storing locally only');
+            console.error('Backend not available, storing locally only');
             throw error;
         }
     }
@@ -299,6 +329,43 @@ class PayPalIntegration {
         }
     }
 
+    // Method giả lập PayPal thanh toán thành công (dùng cho nút test)
+    simulatePaymentSuccess = async (fakePayPalOrder) => {
+        try {
+            // Set test mode flag
+            this.isTestMode = true;
+
+            // Tạo fake actions object
+            const fakeActions = {
+                order: {
+                    capture: async () => {
+                        return fakePayPalOrder;
+                    }
+                }
+            };
+
+            // Tạo fake data
+            const fakeData = {
+                orderID: fakePayPalOrder.id
+            };
+
+            // Gọi handlePaymentSuccess như PayPal thật
+            await this.handlePaymentSuccess(fakeData, fakeActions);
+
+            alert("🎭 Đã giả lập thanh toán PayPal thành công! Đơn hàng đã được tạo và gửi đến Shirtigo.");
+
+        } catch (error) {
+            console.error("❌ Lỗi khi giả lập thanh toán:", error);
+            alert("❌ Lỗi khi giả lập thanh toán: " + error.message);
+            throw error;
+        } finally {
+            // Reset test mode flag
+            this.isTestMode = false;
+        }
+    }
+
+
+
     clearCart() {
         try {
             sessionStorage.removeItem('cartData');
@@ -310,16 +377,12 @@ class PayPalIntegration {
 
     getCartData() {
         try {
-            console.log('Getting cart data...');
             const cartData = sessionStorage.getItem('cartData') || localStorage.getItem('cartData');
-            console.log('Raw cart data from storage:', cartData);
-            
+
             if (cartData) {
                 const parsedData = JSON.parse(cartData);
-                console.log('Parsed cart data:', parsedData);
                 return parsedData;
             } else {
-                console.log('No cart data found in storage');
                 return null;
             }
         } catch (error) {
@@ -342,7 +405,6 @@ class PayPalIntegration {
             notes: document.getElementById('notes')?.value || ''
         };
         
-        console.log('Customer data:', customerData);
         return customerData;
     }
 

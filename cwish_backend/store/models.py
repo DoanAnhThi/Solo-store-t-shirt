@@ -118,6 +118,11 @@ class Order(models.Model):
     phone = models.CharField(max_length=20, blank=True)
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    # Thông tin Shirtigo
+    shirtigo_order_id = models.CharField(max_length=100, blank=True, null=True)
+    shirtigo_response = models.JSONField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -134,7 +139,7 @@ class Order(models.Model):
         return self.main_product or self.bonus_product
 
     def save(self, *args, **kwargs):
-        if not self.total_amount:
+        if not self.total_amount and self.unit_price is not None:
             self.total_amount = self.quantity * self.unit_price
         super().save(*args, **kwargs)
 

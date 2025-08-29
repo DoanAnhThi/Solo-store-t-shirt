@@ -1,14 +1,18 @@
+import requests
+import json
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
-from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from .models import SingleProduct, UserCart, Order, Contact, DigitalBonusProduct, BonusCart
 from .serializers import (
-    SingleProductSerializer, UserCartSerializer, OrderSerializer, 
+    SingleProductSerializer, UserCartSerializer, OrderSerializer,
     OrderCreateSerializer, AddToCartSerializer, UpdateCartQuantitySerializer,
     ContactSerializer, DigitalBonusProductSerializer, BonusCartSerializer,
     AddBonusToCartSerializer, UpdateBonusCartQuantitySerializer
@@ -269,26 +273,168 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             order = serializer.save()
+
+            # Gửi order đến Shirtigo API
+            shirtigo_response = self._send_to_shirtigo(order)
+
+            # Cập nhật order với Shirtigo response
+            if shirtigo_response and 'id' in shirtigo_response:
+                order.shirtigo_order_id = shirtigo_response['id']
+                order.shirtigo_response = shirtigo_response
+                order.save()
+
             response_serializer = OrderSerializer(order)
-            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+            response_data = response_serializer.data
+
+            # Thêm thông tin Shirtigo vào response
+            response_data['shirtigo_response'] = shirtigo_response
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def _send_to_shirtigo(self, order):
+        """Gửi order đến Shirtigo API theo đúng format đã test thành công"""
+        try:
+            shirtigo_url = "https://cockpit.shirtigo.com/api/orders"
+            headers = {
+                "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjE1OGYwYzhmNjFmOGJhZTE1NmFhMjgxMWRjMmQ3OTcwNzE0NDE3ODlkMzAyOGFjYTkzMWYzMmU4YWNiNzg3ZDgxY2MyN2U2MjJhNGY4NmRlIn0.eyJhdWQiOiIxIiwianRpIjoiMTU4ZjBjOGY2MWY4YmFlMTU2YWEyODExZGMyZDc5NzA3MTQ0MTc4OWQzMDI4YWNhOTMxZjMyZThhY2I3ODdkODFjYzI3ZTYyMmE0Zjg2ZGUiLCJpYXQiOjE3NTYxOTcxNzAsIm5iZiI6MTc1NjE5NzE3MCwiZXhwIjoyMDcxNzI5OTcwLCJzdWIiOiI5NzAyNSIsInNjb3BlcyI6WyJyZWFkLXVzZXIiLCJ3cml0ZS11c2VyIiwicmVhZC1kZXNpZ24iLCJ3cml0ZS1kZXNpZ24iLCJyZWFkLXByb2plY3QiLCJ3cml0ZS1wcm9qZWN0IiwicmVhZC1vcmRlciIsIndyaXRlLW9yZGVyIiwicmVhZC13YXJlaG91c2UtcHJvZHVjdCIsIndyaXRlLXdhcmVob3VzZS1wcm9kdWN0IiwicmVhZC13ZWJob29rIiwid3JpdGUtd2ViaG9vayIsInJlYWQtc3RhdHMiXX0.GNZNcATT7i8AfpaXxt9YorQ0VwiG2ehlp5F7Va5vC8AfUYEFe8gkIuTS2M_mG04oMDEHRFmiL8ee4HdrEq9iSlfB5-kzuRDlLaiHx_GAdxnAiBNfHEubC11aFW1r2_LLJOCF7okfZFqNYqdV575PvgekvRzfkTXq8V8RvQLlrhtVwJ5KCHIB-qiIdJNmHB-LhrV1cKpBfUiN12gU87DoQdnY549dFouGJ_FhFc6NV3SiCBCcWXXGEVpvnoIfpKaaNaMmLC25JarqIURUTzYx8c39LpaFyqjNfRvsT7G0jdJvWnOPQNf2d5K-AUQP0U6b4ks_fy3Mhl6wLANKvFYBzqNKuYtbUZSUR-K_BzJ9jUpCd-I0q8AG1XEyq44Z-5v7-DanSYApAgxQEFjia7ulvwIDovYHdM6xIBOGNC-p03YLpE2JXKY6Y93A3tVnIHrxb76Sp7D4PG3ieKl_5re_fqwdFBkHvNghIW58bYx_S2Qr_T588WYTuuroUHvxnhVGnINLH0w0rvNXzmSpvemAtAvi8lqEj7jJgs24G78tKqdvgUL1dU3h1SeSxhPaZpmxXjZlLh4s3UGeXsjLci52yD_T9oST3xh17sdzrMT6z4TeJn7MUQ8grSWuGrwE0UnA_ECPdvwrQnfZFzP23CHEvRm1oGI-SpgysT87bqkLrv0",
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            }
+
+            # Chuẩn bị dữ liệu theo đúng format đã test thành công trên Postman
+            shirtigo_data = {
+                "delivery": {
+                    "type": "delivery",
+                    "firstname": order.first_name or "Nguyen",
+                    "lastname": order.last_name or "Van A",
+                    "street": order.address or "123 Main Street",
+                    "postcode": order.postal_code or "70000",
+                    "city": order.city or "Ho Chi Minh",
+                    "country": order.country or "VN",
+                    "email": order.email or "nguyenvana@example.com"
+                },
+                "products": [
+                    {
+                        "amount": order.quantity or 1,
+                        "productId": "3945923",
+                        "colorId": "325",
+                        "sizeId": "3"
+                    }
+                ]
+            }
+
+            print(f"📤 Shirtigo Request Structure:")
+            print(f"  URL: {shirtigo_url}")
+            print(f"  Headers: Authorization: Bearer [HIDDEN_TOKEN]")
+            print(f"  Headers: Accept: {headers['Accept']}")
+            print(f"  Headers: Content-Type: {headers['Content-Type']}")
+            print(f"  Body: {shirtigo_data}")
+
+            # Gửi request đến Shirtigo
+            print(f"📡 Gửi request đến Shirtigo API...")
+            response = requests.post(shirtigo_url, json=shirtigo_data, headers=headers, timeout=30)
+
+            # Log chỉ status từ Shirtigo API
+            print(f"🎯 Shirtigo API Status: {response.status_code}")
+
+            if response.status_code == 200 or response.status_code == 201:
+                print(f"✅ Shirtigo API thành công!")
+                try:
+                    response_data = response.json()
+                    return response_data
+                except Exception as json_error:
+                    print(f"⚠️ Không thể parse JSON response: {json_error}")
+                    return {"raw_response": response.text}
+            else:
+                print(f"❌ Shirtigo API thất bại! (Đây là lỗi từ Shirtigo, không phải backend của chúng ta)")
+                return {
+                    "error": True,
+                    "status_code": response.status_code,
+                    "response_body": response.text
+                }
+
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Error sending to Shirtigo API: {e}")
+            return None
+        except Exception as e:
+            print(f"❌ Unexpected error in _send_to_shirtigo: {e}")
+            return None
 
     @action(detail=True, methods=['patch'])
     def update_status(self, request, pk=None):
         """Cập nhật trạng thái đơn hàng (chỉ admin)"""
         order = self.get_object()
         new_status = request.data.get('status')
-        
+
         if new_status not in dict(Order.STATUS_CHOICES):
             return Response(
-                {'error': 'Invalid status'}, 
+                {'error': 'Invalid status'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         order.status = new_status
         order.save()
         serializer = OrderSerializer(order)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    @csrf_exempt
+    def test_create(self, request):
+        """Endpoint test tạo đơn hàng không cần authentication - tái sử dụng logic từ create()"""
+        # Tạo user test nếu chưa có
+        from django.contrib.auth.models import User
+        test_user, created = User.objects.get_or_create(
+            username='test_user',
+            defaults={'email': 'test@example.com'}
+        )
+
+        # Tạo dữ liệu test
+        test_data = {
+            'email': request.data.get('email', 'test@example.com'),
+            'first_name': request.data.get('first_name', 'Test'),
+            'last_name': request.data.get('last_name', 'User'),
+            'address': request.data.get('address', '123 Test Street'),
+            'city': request.data.get('city', 'Test City'),
+            'country': request.data.get('country', 'VN'),
+            'postal_code': request.data.get('postal_code', '70000'),
+            'phone': request.data.get('phone', ''),
+            'quantity': request.data.get('quantity', 1),
+            'unit_price': float(request.data.get('unit_price', 25.00)),
+            'currency': request.data.get('currency', 'USD'),
+            'user': test_user.id
+        }
+
+        # Lấy sản phẩm đầu tiên
+        main_product = SingleProduct.objects.filter(is_active=True).first()
+        if main_product:
+            test_data['main_product'] = main_product.id
+
+        # Tái sử dụng logic từ create() method
+        serializer = self.get_serializer(data=test_data)
+        if serializer.is_valid():
+            order = serializer.save()
+
+            # Gửi order đến Shirtigo API (giống như create() method)
+            shirtigo_response = self._send_to_shirtigo(order)
+
+            # Cập nhật order với Shirtigo response
+            if shirtigo_response and 'id' in shirtigo_response:
+                order.shirtigo_order_id = shirtigo_response['id']
+                order.shirtigo_response = shirtigo_response
+                order.save()
+
+            response_serializer = OrderSerializer(order)
+            response_data = response_serializer.data
+            response_data['shirtigo_response'] = shirtigo_response
+
+            return Response({
+                'message': 'Test order created successfully - using same logic as production',
+                'order': response_data,
+                'shirtigo_response': shirtigo_response,
+                'note': 'This endpoint uses the SAME logic as the production /api/orders/create/ endpoint'
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ContactViewSet(viewsets.GenericViewSet):
@@ -322,6 +468,98 @@ def health_check(request):
         'status': 'healthy',
         'message': 'Django backend is running'
     })
+
+
+# Simple test endpoint không sử dụng Django REST framework
+@csrf_exempt
+@require_POST
+def simple_test_order(request):
+    """Endpoint test đơn giản nhất - không cần authentication"""
+    try:
+        print("🎯 Simple test endpoint called!")
+
+        # Parse JSON data
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError as e:
+            print(f"❌ Invalid JSON: {e}")
+            return JsonResponse({
+                'error': 'Invalid JSON',
+                'message': str(e)
+            }, status=400)
+
+        # Tạo user test
+        test_user, created = User.objects.get_or_create(
+            username='test_user',
+            defaults={'email': 'test@example.com'}
+        )
+
+        # Tạo fake order data từ request
+        order_data = {
+            'email': data.get('customer', {}).get('email', 'test@example.com'),
+            'first_name': data.get('customer', {}).get('firstName', 'Test'),
+            'last_name': data.get('customer', {}).get('lastName', 'User'),
+            'address': data.get('customer', {}).get('address', '123 Test Street'),
+            'city': data.get('customer', {}).get('city', 'Test City'),
+            'country': data.get('customer', {}).get('country', 'VN'),
+            'postal_code': data.get('customer', {}).get('zipCode', '70000'),
+            'phone': data.get('customer', {}).get('phone', ''),
+            'quantity': 1,
+            'unit_price': float(data.get('total', 25.00)),
+            'total_amount': float(data.get('total', 25.00)),
+            'currency': 'USD',
+            'user': test_user.id
+        }
+
+        # Lấy sản phẩm đầu tiên
+        main_product = SingleProduct.objects.filter(is_active=True).first()
+        if main_product:
+            order_data['main_product'] = main_product.id
+
+        # Tạo order trực tiếp thay vì dùng serializer (để tránh lỗi context)
+        try:
+            order = Order.objects.create(
+                user=test_user,
+                email=order_data['email'],
+                first_name=order_data['first_name'],
+                last_name=order_data['last_name'],
+                address=order_data['address'],
+                city=order_data['city'],
+                country=order_data['country'],
+                postal_code=order_data['postal_code'],
+                phone=order_data['phone'],
+                quantity=order_data['quantity'],
+                unit_price=order_data['unit_price'],
+                total_amount=order_data['total_amount'],
+                currency=order_data['currency'],
+                main_product_id=order_data.get('main_product')
+            )
+            print(f"✅ Order created successfully: {order.id}")
+
+            # Gửi đến Shirtigo API
+            order_viewset = OrderViewSet()
+            shirtigo_response = order_viewset._send_to_shirtigo(order)
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Test order created successfully',
+                'order_id': str(order.id),
+                'shirtigo_response': shirtigo_response,
+                'shirtigo_status': shirtigo_response.get('status_code') if isinstance(shirtigo_response, dict) else 'unknown'
+            }, status=201)
+        except Exception as order_error:
+            print(f"❌ Error creating order: {order_error}")
+            return JsonResponse({
+                'error': 'Failed to create order',
+                'message': str(order_error)
+            }, status=400)
+
+    except Exception as e:
+        print(f"❌ Unexpected error in simple_test_order: {e}")
+        return JsonResponse({
+            'error': 'Internal server error',
+            'message': str(e)
+        }, status=500)
 
 
 # --- Auth endpoints (session-based) ---
