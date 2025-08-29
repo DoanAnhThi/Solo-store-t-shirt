@@ -107,6 +107,33 @@
 .mini-cart__close:hover {
     color: #333;
 }
+
+/* Checkout button styling */
+.mini-cart__checkout {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 15px 20px !important;
+    background: #007bff !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    border-radius: 5px !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    text-align: center !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease !important;
+}
+
+.mini-cart__checkout:hover {
+    background: #0056b3 !important;
+    color: #ffffff !important;
+}
+
+.mini-cart__checkout span {
+    color: inherit !important;
+    font-weight: inherit !important;
+}
 .cart__body { max-height: calc(100vh - 140px); overflow:auto; padding-bottom:15px; }
 .mini-cart__footer { position:sticky; bottom:0; background:#fff; padding:20px 25px; box-shadow: 0 -4px 12px rgba(0,0,0,.06); }
 
@@ -439,6 +466,50 @@ body .mini-cart__close:hover {
 .mini-cart.is-open[style*="opacity: 0"] {
     visibility: visible !important;
     opacity: 1 !important;
+}
+
+/* Ultimate checkout button override */
+html body .mini-cart__checkout,
+body .mini-cart__checkout {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 15px 20px !important;
+    background: #007bff !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    border-radius: 5px !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    text-align: center !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+html body .mini-cart__checkout:hover,
+body .mini-cart__checkout:hover {
+    background: #0056b3 !important;
+    color: #ffffff !important;
+}
+
+html body .mini-cart__checkout span,
+body .mini-cart__checkout span {
+    color: inherit !important;
+    font-weight: inherit !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Override any conflicting .btn class styles */
+html body .btn.mini-cart__checkout,
+body .btn.mini-cart__checkout,
+.btn.mini-cart__checkout {
+    background: #007bff !important;
+    color: #ffffff !important;
+    border: none !important;
+    text-decoration: none !important;
 }
 </style>
 
