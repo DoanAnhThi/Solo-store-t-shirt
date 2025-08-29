@@ -68,7 +68,7 @@
 	<div class="mini-cart__footer" bis_skin_checked="1">
 		<div class="mini-cart__actions" bis_skin_checked="1">
 			<a href="./checkout.html" class="btn mini-cart__checkout" data-checkout="">
-				<span>Check Out — </span>
+				<span class="mini-cart__subtotal__price">Check Out — </span>
 				<span class="mini-cart__subtotal__price" data-cart-total=""><span class="money">$0</span></span>
 			</a>
 		</div>
@@ -421,6 +421,219 @@ body .mini-cart__backdrop.is-visible {
     opacity: 1 !important;
     visibility: visible !important;
     z-index: 999998 !important;
+}
+
+/* MAXIMUM SPECIFICITY CSS OVERRIDE FOR CHECKOUT BUTTON */
+html:not(.no-js) body #shopify-section-minicart .mini-cart__checkout,
+html:not(.no-js) body .mini-cart__checkout,
+html body #shopify-section-minicart .mini-cart__checkout,
+html body .mini-cart__checkout,
+#shopify-section-minicart .mini-cart__checkout,
+.mini-cart__checkout {
+    /* Basic styling */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 1.25rem !important;
+    border: none !important;
+    border-radius: 0 !important;
+    border-bottom-left-radius: 0.1875rem !important;
+    border-bottom-right-radius: 0.1875rem !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+
+    /* Font styling */
+    font-family: 'Futura', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.2 !important;
+
+    /* Colors - BLACK background, WHITE text */
+    background-color: #000000 !important;
+    background: #000000 !important;
+    color: #ffffff !important;
+
+    /* Position and z-index */
+    position: relative !important;
+    z-index: 999999 !important;
+
+    /* Animation */
+    transition: all 0.3s ease !important;
+}
+
+html:not(.no-js) body #shopify-section-minicart .mini-cart__checkout:hover,
+html:not(.no-js) body .mini-cart__checkout:hover,
+html body #shopify-section-minicart .mini-cart__checkout:hover,
+html body .mini-cart__checkout:hover,
+#shopify-section-minicart .mini-cart__checkout:hover,
+.mini-cart__checkout:hover {
+    background-color: #333333 !important;
+    background: #333333 !important;
+    color: #ffffff !important;
+    opacity: 0.9 !important;
+}
+
+/* Text spans inside button - CENTERED ALIGNMENT */
+html:not(.no-js) body #shopify-section-minicart .mini-cart__checkout span,
+html:not(.no-js) body .mini-cart__checkout span,
+html body #shopify-section-minicart .mini-cart__checkout span,
+html body .mini-cart__checkout span,
+#shopify-section-minicart .mini-cart__checkout span,
+.mini-cart__checkout span {
+    display: inline !important;
+    color: #ffffff !important;
+    font-family: 'Futura', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    vertical-align: baseline !important;
+    transform: translateY(110%) !important;
+    opacity: 0 !important;
+    transition: all 0.5s cubic-bezier(0.35, 0.45, 0.06, 1.02) !important;
+
+    /* Force visibility */
+    visibility: visible !important;
+    position: relative !important;
+    z-index: 999999 !important;
+}
+
+html:not(.no-js) body .mini-cart.is-visible #shopify-section-minicart .mini-cart__checkout span,
+html:not(.no-js) body .mini-cart.is-visible .mini-cart__checkout span,
+html body .mini-cart.is-visible #shopify-section-minicart .mini-cart__checkout span,
+html body .mini-cart.is-visible .mini-cart__checkout span,
+.mini-cart.is-visible #shopify-section-minicart .mini-cart__checkout span,
+.mini-cart.is-visible .mini-cart__checkout span {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* First span (Check Out —) */
+html:not(.no-js) body #shopify-section-minicart .mini-cart__checkout span:first-child,
+html:not(.no-js) body .mini-cart__checkout span:first-child,
+html body #shopify-section-minicart .mini-cart__checkout span:first-child,
+html body .mini-cart__checkout span:first-child,
+#shopify-section-minicart .mini-cart__checkout span:first-child,
+.mini-cart__checkout span:first-child {
+    margin-right: 0.3125rem !important;
+}
+
+/* Force override any .btn class conflicts */
+html:not(.no-js) body #shopify-section-minicart .btn.mini-cart__checkout,
+html:not(.no-js) body .btn.mini-cart__checkout,
+html body #shopify-section-minicart .btn.mini-cart__checkout,
+html body .btn.mini-cart__checkout,
+#shopify-section-minicart .btn.mini-cart__checkout,
+.btn.mini-cart__checkout {
+    background-color: #000000 !important;
+    background: #000000 !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-family: 'Futura', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font-size: 1.125rem !important;
+    text-transform: uppercase !important;
+    text-decoration: none !important;
+}
+
+html:not(.no-js) body #shopify-section-minicart .btn.mini-cart__checkout span,
+html:not(.no-js) body .btn.mini-cart__checkout span,
+html body #shopify-section-minicart .btn.mini-cart__checkout span,
+html body .btn.mini-cart__checkout span,
+#shopify-section-minicart .btn.mini-cart__checkout span,
+.btn.mini-cart__checkout span {
+    color: #ffffff !important;
+    font-family: 'Futura', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font-size: 1.125rem !important;
+    text-transform: uppercase !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Fix for .money span inside checkout button - CENTERED ALIGNMENT */
+html:not(.no-js) body #shopify-section-minicart .mini-cart__checkout .money,
+html:not(.no-js) body .mini-cart__checkout .money,
+html body #shopify-section-minicart .mini-cart__checkout .money,
+html body .mini-cart__checkout .money,
+#shopify-section-minicart .mini-cart__checkout .money,
+.mini-cart__checkout .money {
+    color: #ffffff !important;
+    font-family: 'Futura', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline !important;
+    vertical-align: baseline !important;
+    position: static !important;
+    float: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    z-index: auto !important;
+}
+
+/* Fix for .mini-cart__subtotal__price span inside checkout button - CENTERED ALIGNMENT */
+html:not(.no-js) body #shopify-section-minicart .mini-cart__checkout .mini-cart__subtotal__price,
+html:not(.no-js) body .mini-cart__checkout .mini-cart__subtotal__price,
+html body #shopify-section-minicart .mini-cart__checkout .mini-cart__subtotal__price,
+html body .mini-cart__checkout .mini-cart__subtotal__price,
+#shopify-section-minicart .mini-cart__checkout .mini-cart__subtotal__price,
+.mini-cart__checkout .mini-cart__subtotal__price {
+    color: #ffffff !important;
+    font-family: 'Futura', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline !important;
+    vertical-align: baseline !important;
+    position: static !important;
+    float: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    z-index: auto !important;
+}
+
+html:not(.no-js) body #shopify-section-minicart .mini-cart__checkout .mini-cart__subtotal__price span,
+html:not(.no-js) body .mini-cart__checkout .mini-cart__subtotal__price span,
+html body #shopify-section-minicart .mini-cart__checkout .mini-cart__subtotal__price span,
+html body .mini-cart__checkout .mini-cart__subtotal__price span,
+#shopify-section-minicart .mini-cart__checkout .mini-cart__subtotal__price span,
+.mini-cart__checkout .mini-cart__subtotal__price span {
+    color: #ffffff !important;
+    font-family: 'Futura', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline !important;
+    vertical-align: baseline !important;
+    position: static !important;
+    float: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    z-index: auto !important;
 }
 
 /* Fix header and close button */
