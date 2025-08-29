@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Minicart Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-buttons { margin: 20px 0; }
+        .test-buttons button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .test-buttons button:hover { background: #0056b3; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .console-output { background: #f8f9fa; padding: 15px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; border: 1px solid #ddd; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Simple Minicart Test</h1>
+    
+    <div class="test-buttons">
+        <button onclick="testMinicartExists()">Check Minicart Exists</button>
+        <button onclick="testToggleButton()">Test Toggle Button</button>
+        <button onclick="testBackdropClick()">Test Backdrop Click</button>
+        <button onclick="testESCKey()">Test ESC Key</button>
+        <button onclick="clearOutput()">Clear Output</button>
+    </div>
+    
+    <div id="status"></div>
+    <div id="console-output" class="console-output"></div>
+    
+    <!-- Include the same structure as other pages -->
+    <div data-include="header"></div>
+    <div data-include="footer"></div>
+    
+    <script src="./include.js"></script>
+    <script src="./assets/local-fixes.js"></script>
+    <script src="./debug-backdrop.js"></script>
+    
+    <script>
+        function addStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            status.appendChild(div);
+        }
+        
+        function addConsole(message) {
+            const output = document.getElementById('console-output');
+            output.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearOutput() {
+            document.getElementById('status').innerHTML = '';
+            document.getElementById('console-output').textContent = '';
+        }
+        
+        function testMinicartExists() {
+            const mini = document.querySelector('.mini-cart');
+            const backdrop = document.querySelector('.mini-cart__backdrop');
+            const toggleBtn = document.querySelector('[data-toggle-bag]');
+            
+            if (mini && backdrop && toggleBtn) {
+                addStatus('✅ All minicart elements found', 'success');
+            } else {
+                addStatus(`❌ Missing elements: Mini(${!!mini}) Backdrop(${!!backdrop}) Toggle(${!!toggleBtn})`, 'error');
+            }
+        }
+        
+        function testToggleButton() {
+            const toggleBtn = document.querySelector('[data-toggle-bag]');
+            if (!toggleBtn) {
+                addStatus('❌ Toggle button not found', 'error');
+                return;
+            }
+            
+            addStatus('🔄 Testing toggle button click...', 'info');
+            toggleBtn.click();
+            
+            setTimeout(() => {
+                const mini = document.querySelector('.mini-cart');
+                if (mini && mini.classList.contains('is-open')) {
+                    addStatus('✅ Minicart opened successfully', 'success');
+                } else {
+                    addStatus('❌ Minicart failed to open', 'error');
+                }
+            }, 200);
+        }
+        
+        function testBackdropClick() {
+            const backdrop = document.querySelector('.mini-cart__backdrop');
+            const mini = document.querySelector('.mini-cart');
+            
+            if (!backdrop || !mini) {
+                addStatus('❌ Minicart elements not found', 'error');
+                return;
+            }
+            
+            // First open the cart
+            if (!mini.classList.contains('is-open')) {
+                const toggleBtn = document.querySelector('[data-toggle-bag]');
+                if (toggleBtn) toggleBtn.click();
+                
+                setTimeout(() => testBackdropClick(), 300);
+                return;
+            }
+            
+            addStatus('🎯 Testing backdrop click...', 'info');
+            backdrop.click();
+            
+            setTimeout(() => {
+                if (!mini.classList.contains('is-open')) {
+                    addStatus('✅ Backdrop click worked - cart closed', 'success');
+                } else {
+                    addStatus('❌ Backdrop click failed - cart still open', 'error');
+                }
+            }, 200);
+        }
+        
+        function testESCKey() {
+            const mini = document.querySelector('.mini-cart');
+            
+            if (!mini) {
+                addStatus('❌ Minicart not found', 'error');
+                return;
+            }
+            
+            // First open the cart
+            if (!mini.classList.contains('is-open')) {
+                const toggleBtn = document.querySelector('[data-toggle-bag]');
+                if (toggleBtn) toggleBtn.click();
+                
+                setTimeout(() => testESCKey(), 300);
+                return;
+            }
+            
+            addStatus('⌨️ Testing ESC key...', 'info');
+            const escEvent = new KeyboardEvent('keydown', { key: 'Escape' });
+            document.dispatchEvent(escEvent);
+            
+            setTimeout(() => {
+                if (!mini.classList.contains('is-open')) {
+                    addStatus('✅ ESC key worked - cart closed', 'success');
+                } else {
+                    addStatus('❌ ESC key failed - cart still open', 'error');
+                }
+            }, 200);
+        }
+        
+        // Override console methods to capture output
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            addConsole('LOG: ' + args.join(' '));
+            originalLog.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            addConsole('WARN: ' + args.join(' '));
+            originalWarn.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            addConsole('ERROR: ' + args.join(' '));
+            originalError.apply(console, args);
+        };
+        
+        // Auto-run basic test after page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addStatus('🚀 Page loaded, running basic test...', 'info');
+                testMinicartExists();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<div id="shopify-section-minicart" class="shopify-section" bis_skin_checked="1"><aside class="mini-cart" data-mini-cart="">
+	<header class="mini-cart__header">
+		<h3 class="mini-cart__header__title">Your Cart</h3>
+		<span class="mini-cart__close fas fa-times" data-toggle-bag=""></span>
+	</header>
+	<div class="cart__body" bis_skin_checked="1">
+		<div class="cart__shipping-threshold" bis_skin_checked="1">
+			<p id="shipping-message">Get 1 more item to unlock FREE SHIPPING on your order..</p>
+			<span class="cart__shipping-bar">
+				<span class="cart__shipping-bar__progress" id="shipping-progress" style="width: 50%;"></span>
+			</span>
+		</div>
+		
+		<!-- Cart Items Container -->
+		<div class="cart__items" data-mini-cart-items="" bis_skin_checked="1">
+			<!-- Cart item sẽ được hiển thị ở đây bởi cart manager -->
+			<div class="cart__item" style="display: none;">
+				<div class="cart__item__image">
+					<img src="" alt="" class="cart__item__image">
+				</div>
+				<div class="cart__item__body">
+					<h4 class="cart__item__title"></h4>
+					<div class="cart__item__price-qty">
+						<div class="cart__item__qty">
+							<div class="product__quantity-wrapper product__quantity-wrapper--cart">
+								<button class="qty-control qty-down" type="button">-</button>
+								<div class="quantity-display">1</div>
+								<button class="qty-control qty-up" type="button">+</button>
+							</div>
+						</div>
+						<div class="cart__item__price">$0.00</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Empty cart message -->
+			<div class="cart__empty" style="display: none;">
+				<p>Your cart is empty</p>
+			</div>
+		</div>
+
+		<!-- Upsell block -->
+		<div class="product-page product-page--upsell" data-section-type="product" bis_skin_checked="1">
+			<p class="cart__section-title">Add digital design package with 50 designs for $17.90 | Shipping free from $50.00</p>
+			<div class="cart__upsell" bis_skin_checked="1">
+				<div class="cart__upsell__item" bis_skin_checked="1">
+					<div class="cart__item" bis_skin_checked="1">
+						<div class="cart__item__image" bis_skin_checked="1">
+							<img src="" alt="Digital Design Package" id="bonus-upsell-image">
+						</div>
+						<div class="cart__item__body" bis_skin_checked="1">
+							<div class="upsell__options" bis_skin_checked="1">
+								<div class="product__quantity-wrapper" style="display: none;" bis_skin_checked="1">
+									<button class="qty-control qty-up" type="button" name="button" data-control="up">+</button>
+									<input class="product__quantity" aria-label="Quantity" type="number" id="bonus-quantity" name="quantity" value="1" min="1" hidden="">
+									<button class="qty-control qty-down" type="button" name="button" data-control="down">-</button>
+								</div>
+							</div>
+							<button type="button" name="add" class="add-to-cart btn" id="add-bonus-to-cart" data-add-to-cart="">
+								<span data-add-to-cart-text="">Add to Cart</span>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="mini-cart__footer" bis_skin_checked="1">
+		<div class="mini-cart__actions" bis_skin_checked="1">
+			<a href="./checkout.html" class="btn mini-cart__checkout" data-checkout="">
+				<span>Check Out — </span>
+				<span class="mini-cart__subtotal__price" data-cart-total=""><span class="money">$0</span></span>
+			</a>
+		</div>
+	</div>
+</aside>
+
+<div class="mini-cart__backdrop" bis_skin_checked="1"></div>
+</div>
+
+<style>
+/* Reset CSS cho quantity controls */
+.cart__item__qty *,
+.product__quantity-wrapper--cart *,
+.qty-control *,
+.quantity-display * {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.mini-cart { display:block; max-height:100vh; overflow:hidden; }
+.mini-cart__header { position: relative; top:0; background:#fff; z-index:2; padding: 20px 25px; }
+.mini-cart__header__title { font-size: 24px; font-weight: 600; margin: 0; }
+.mini-cart__close { position: absolute; top: 20px; right: 25px; font-size: 20px; cursor: pointer; color: #666; }
+.cart__body { max-height: calc(100vh - 140px); overflow:auto; padding-bottom:15px; }
+.mini-cart__footer { position:sticky; bottom:0; background:#fff; padding:20px 25px; box-shadow: 0 -4px 12px rgba(0,0,0,.06); }
+
+.cart__item { display: flex; padding: 20px; border-bottom: 1px solid #eee; }
+.cart__item__image { width: 90px; height: 90px; margin-right: 20px; }
+.cart__item__image img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.cart__item__body { flex: 1; }
+.cart__item__title { margin: 0 0 10px 0; font-size: 16px; font-weight: 600; }
+.cart__item__price-qty { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    gap: 20px;
+}
+
+.cart__item__qty { 
+    display: flex !important; 
+    align-items: center !important; 
+    flex-shrink: 0 !important;
+    min-width: auto !important;
+    max-width: none !important;
+}
+
+.product__quantity-wrapper--cart { 
+    display: flex !important; 
+    align-items: center !important; 
+    gap: 0 !important; 
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    width: 140px !important;
+    min-width: 140px !important;
+    max-width: 140px !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    position: relative !important;
+}
+
+.qty-control { 
+    background: #f8f9fa !important; 
+    border: none !important; 
+    border-radius: 0 !important;
+    padding: 0 !important; 
+    margin: 0 !important;
+    cursor: pointer !important; 
+    font-size: 18px !important;
+    font-weight: bold !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+    color: #495057 !important;
+}
+
+.qty-control:hover { 
+    background: #e9ecef !important; 
+    color: #212529 !important;
+}
+
+.qty-control:hover { 
+    background: #e0e0e0 !important; 
+}
+
+.quantity-display { 
+    text-align: center !important; 
+    width: 60px !important; 
+    height: 40px !important;
+    padding: 0 !important; 
+    margin: 0 20px !important;
+    background: white !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+    border-left: 1px solid #e0e0e0 !important;
+    border-right: 1px solid #e0e0e0 !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+.cart__item__price { font-weight: 600; font-size: 18px; color: #333; }
+.cart__empty { text-align: center; padding: 40px 20px; color: #666; }
+
+/* Shipping threshold styles */
+.cart__shipping-threshold {
+    padding: 20px 25px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 25px;
+    text-align: center;
+}
+
+.cart__shipping-threshold p {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #495057;
+    font-weight: 500;
+}
+
+.cart__shipping-bar {
+    display: block;
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.cart__shipping-bar__progress {
+    height: 100%;
+    background: #28a745;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.cart__shipping-bar__progress::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: #28a745;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Mini-cart visibility and positioning */
+.mini-cart {
+    position: fixed;
+    top: 0;
+    right: -500px;
+    width: 500px;
+    height: 100vh;
+    background: white;
+    z-index: 1000;
+    transition: right 0.3s ease;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    overflow-y: auto;
+}
+
+.mini-cart.is-open {
+    right: 0;
+}
+
+.mini-cart__backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.mini-cart__backdrop.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .mini-cart {
+        width: 100vw;
+        right: -100vw;
+    }
+}
+
+@media (max-width: 1200px) {
+    .mini-cart {
+        width: 450px;
+        right: -450px;
+    }
+}
+
+/* Cart count badge */
+.bag__item-alert {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.bag__item-alert.is-visible {
+    display: flex;
+}
+
+.bag__item-alert:not(.is-visible) {
+    display: none;
+}
+</style>
+
+

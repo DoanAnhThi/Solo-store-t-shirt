@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minicart Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .test-result { padding: 10px; margin: 10px 0; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>Minicart Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <button onclick="testCurrentPage()">Test Current Page</button>
+        <button onclick="testAllPages()">Test All Pages</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Logs</h2>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        const pages = [
+            { name: 'Home', url: './home.html' },
+            { name: 'Nectar', url: './nectar.html' },
+            { name: 'Contact', url: './contact.html' }
+        ];
+
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+        }
+
+        function addLog(message) {
+            const logs = document.getElementById('logs');
+            logs.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('logs').textContent = '';
+        }
+
+        function testCurrentPage() {
+            addResult('Testing current page...', 'info');
+            
+            // Test if minicart elements exist
+            const mini = document.querySelector('.mini-cart');
+            const backdrop = document.querySelector('.mini-cart__backdrop');
+            const toggleBtn = document.querySelector('[data-toggle-bag]');
+            
+            if (mini && backdrop) {
+                addResult('✓ Minicart elements found', 'success');
+                
+                // Test toggle functionality
+                if (toggleBtn) {
+                    addResult('✓ Toggle button found', 'success');
+                    
+                    // Simulate click
+                    try {
+                        toggleBtn.click();
+                        
+                        setTimeout(() => {
+                            if (mini.classList.contains('is-open')) {
+                                addResult('✓ Minicart opens correctly', 'success');
+                                
+                                // Test close by X
+                                const closeBtn = document.querySelector('.mini-cart__close');
+                                if (closeBtn) {
+                                    closeBtn.click();
+                                    setTimeout(() => {
+                                        if (!mini.classList.contains('is-open')) {
+                                            addResult('✓ Minicart closes by X button', 'success');
+                                        } else {
+                                            addResult('✗ Minicart failed to close by X button', 'error');
+                                        }
+                                    }, 100);
+                                }
+                            } else {
+                                addResult('✗ Minicart failed to open', 'error');
+                            }
+                        }, 100);
+                        
+                    } catch (error) {
+                        addResult(`✗ Error testing toggle: ${error.message}`, 'error');
+                    }
+                } else {
+                    addResult('✗ Toggle button not found', 'error');
+                }
+            } else {
+                addResult('✗ Minicart elements not found', 'error');
+                addLog(`Mini: ${!!mini}, Backdrop: ${!!backdrop}`);
+            }
+        }
+
+        function testAllPages() {
+            addResult('Starting comprehensive test...', 'info');
+            
+            pages.forEach((page, index) => {
+                setTimeout(() => {
+                    testPageInIframe(page);
+                }, index * 2000);
+            });
+        }
+
+        function testPageInIframe(page) {
+            addResult(`Testing ${page.name}...`, 'info');
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = page.url;
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            
+            iframe.onload = () => {
+                try {
+                    const iframeDoc = iframe.contentDocument;
+                    const mini = iframeDoc.querySelector('.mini-cart');
+                    const backdrop = iframeDoc.querySelector('.mini-cart__backdrop');
+                    const toggleBtn = iframeDoc.querySelector('[data-toggle-bag]');
+                    
+                    if (mini && backdrop && toggleBtn) {
+                        addResult(`✓ ${page.name}: All elements found`, 'success');
+                    } else {
+                        addResult(`✗ ${page.name}: Missing elements - Mini: ${!!mini}, Backdrop: ${!!backdrop}, Toggle: ${!!toggleBtn}`, 'error');
+                    }
+                } catch (error) {
+                    addResult(`✗ ${page.name}: Error accessing iframe - ${error.message}`, 'error');
+                }
+                
+                document.body.removeChild(iframe);
+            };
+            
+            iframe.onerror = () => {
+                addResult(`✗ ${page.name}: Failed to load`, 'error');
+                document.body.removeChild(iframe);
+            };
+        }
+
+        // Capture console logs
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            addLog('LOG: ' + args.join(' '));
+            originalLog.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            addLog('WARN: ' + args.join(' '));
+            originalWarn.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            addLog('ERROR: ' + args.join(' '));
+            originalError.apply(console, args);
+        };
+
+        // Auto-test current page on load
+        window.addEventListener('load', () => {
+            setTimeout(testCurrentPage, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="./assets/home/home_files/theme.scss.css" />
+  <link rel="stylesheet" href="./assets/home/home_files/fa-all.min.css" />
+  <link rel="stylesheet" href="./assets/local-fixes.css" />
+</head>
+<body>
+  <div data-include="header"></div>
+  <div class="auth-container">
+  <main class="page-width" style="max-width:520px;margin:40px auto;">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label>Username or email</label>
+      <input type="text" id="loginUsername" required />
+      <label>Password</label>
+      <input type="password" id="loginPassword" required />
+      <button type="submit" class="btn">Login</button>
+    </form>
+    <p>Don't have an account? <a href="/signup">Sign up</a></p>
+  </main>
+  </div>
+  <div data-include="footer"></div>
+  <script src="./include.js"></script>
+  <script src="./assets/local-fixes.js"></script>
+  <script>
+    const API_BASE = 'http://localhost:8000';
+    // Ensure CSRF cookie is available on first load
+    (function ensureCsrf(){
+      try {
+        fetch(`${API_BASE}/api/auth/me/`, { credentials: 'include' });
+      } catch (e) { /* noop */ }
+    })();
+    function getCookie(name){
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    document.addEventListener('submit', async function(e){
+      if(e.target && e.target.id === 'loginForm'){
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const res = await fetch(`${API_BASE}/api/auth/login/`,{
+          method:'POST', credentials:'include', headers:{'Content-Type':'application/json','X-CSRFToken': getCookie('csrftoken')},
+          body: JSON.stringify({username, password})
+        });
+        if(res.ok){ window.location.href = '/home'; }
+        else { alert('Login failed'); }
+      }
+    });
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cwish Store</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .nav-links a {
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .nav-links a:hover {
+            background-color: #0056b3;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Cwish Store</h1>
+        <p class="loading">Loading...</p>
+        
+        <div class="nav-links">
+            <a href="/home">Home</a>
+            <a href="/nectar">Nectar</a>
+            <a href="/contact">Contact</a>
+            <a href="/cart">Cart</a>
+        </div>
+    </div>
+
+    <script>
+        // URL routing logic
+        const routes = {
+            '/': '/home.html',
+            '/home': '/home.html',
+            '/nectar': '/nectar.html',
+            '/contact': '/contact.html',
+            '/cart': '/cart.html'
+        };
+
+        function handleRouting() {
+            const path = window.location.pathname;
+            const targetFile = routes[path];
+            
+            if (targetFile) {
+                // Load the target HTML file
+                fetch(targetFile)
+                    .then(response => {
+                        if (response.ok) {
+                            return response.text();
+                        }
+                        throw new Error('Page not found');
+                    })
+                    .then(html => {
+                        // Replace the current page content
+                        document.documentElement.innerHTML = html;
+                        // Update the URL without reloading
+                        window.history.pushState({}, '', path);
+                    })
+                    .catch(error => {
+                        console.error('Error loading page:', error);
+                        document.querySelector('.container').innerHTML = `
+                            <h1>404 - Page Not Found</h1>
+                            <p>The page you're looking for doesn't exist.</p>
+                            <div class="nav-links">
+                                <a href="/home">Go to Home</a>
+                            </div>
+                        `;
+                    });
+            }
+        }
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', handleRouting);
+
+        // Initial routing
+        handleRouting();
+
+        // Handle navigation clicks
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A' && e.target.href.includes(window.location.origin)) {
+                e.preventDefault();
+                const path = e.target.pathname;
+                window.history.pushState({}, '', path);
+                handleRouting();
+            }
+        });
+    </script>
+</body>
+</html>

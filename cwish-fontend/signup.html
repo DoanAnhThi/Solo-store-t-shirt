@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="./assets/home/home_files/theme.scss.css" />
+  <link rel="stylesheet" href="./assets/home/home_files/fa-all.min.css" />
+  <link rel="stylesheet" href="./assets/local-fixes.css" />
+</head>
+<body>
+  <div data-include="header"></div>
+  <div class="auth-container">
+  <main class="page-width" style="max-width:520px;margin:40px auto;">
+    <h2>Create account</h2>
+    <form id="signupForm">
+      <label>Username</label>
+      <input type="text" id="suUsername" required />
+      <label>Email (optional)</label>
+      <input type="email" id="suEmail" />
+      <label>Password</label>
+      <input type="password" id="suPassword" required />
+      <button type="submit" class="btn">Sign up</button>
+    </form>
+    <p>Already have an account? <a href="/login">Login</a></p>
+  </main>
+  </div>
+  <div data-include="footer"></div>
+  <script src="./include.js"></script>
+  <script src="./assets/local-fixes.js"></script>
+  <script>
+    const API_BASE = 'http://localhost:8000';
+    // Ensure CSRF cookie is set before any POST by hitting the csrf-setting endpoint
+    (function ensureCsrf(){
+      try {
+        fetch(`${API_BASE}/api/auth/me/`, { credentials: 'include' });
+      } catch (e) { /* noop */ }
+    })();
+    function getCookie(name){
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    document.addEventListener('submit', async function(e){
+      if(e.target && e.target.id === 'signupForm'){
+        e.preventDefault();
+        const username = document.getElementById('suUsername').value.trim();
+        const email = document.getElementById('suEmail').value.trim();
+        const password = document.getElementById('suPassword').value;
+        const res = await fetch(`${API_BASE}/api/auth/signup/`,{
+          method:'POST', credentials:'include', headers:{'Content-Type':'application/json','X-CSRFToken': getCookie('csrftoken')},
+          body: JSON.stringify({username, email, password})
+        });
+        if(res.ok){ window.location.href = '/home'; }
+        else { const t = await res.json().catch(()=>({detail:'Signup failed'})); alert(t.detail || 'Signup failed'); }
+      }
+    });
+  </script>
+</body>
+</html>
+
+

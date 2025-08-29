@@ -1,0 +1,12 @@
+/* Local fixes for static preview */
+.mini-cart{display:none;}
+.mini-cart.is-open{display:block; position: fixed; right: 0; z-index: 1000;}
+.mini-cart__backdrop{display:none;}
+.mini-cart__backdrop.is-visible{display:block; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999;}
+
+/* Auth pages: make full-height and center content */
+html, body { height: 100%; }
+body { min-height: 100vh; display: flex; flex-direction: column; }
+[data-include="header"], [data-include="footer"] { flex: 0 0 auto; }
+.auth-container { flex: 1 0 auto; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+.auth-container main { margin: 0 auto !important; width: 100%; }

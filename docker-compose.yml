@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: cwish_backend/Dockerfile
+    container_name: tshirt-backend
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./cwish_backend:/app
+    environment:
+      - DEBUG=1
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: cwish-fontend/Dockerfile
+    container_name: tshirt-frontend
+    working_dir: /site
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./cwish-fontend:/site
+    restart: unless-stopped
+
+networks:
+  default:
+    name: tshirt-net
+
+

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Account - Hummingbird Food</title>
+  <link rel="stylesheet" href="./assets/home/home_files/theme.scss.css" />
+  <link rel="stylesheet" href="./assets/home/home_files/fa-all.min.css" />
+  <link rel="stylesheet" href="./assets/local-fixes.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #523bff, #6c5ce7);
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+    }
+    
+    .promo-bar {
+      background-color: #523bff;
+      color: white;
+      padding: 10px 0;
+      text-align: center;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 2.5em;
+      font-weight: bold;
+    }
+    
+    .nav {
+      background: white;
+      padding: 15px 0;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .nav a {
+      color: #2d3436;
+      text-decoration: none;
+      margin: 0 20px;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    
+    .nav a:hover {
+      color: #6c5ce7;
+    }
+    
+    .auth-container {
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    
+    .account-card {
+      max-width: 520px;
+      width: 100%;
+      padding: 40px;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .account-card h2 {
+      text-align: center;
+      color: #2d3436;
+      margin-bottom: 30px;
+      font-size: 2em;
+    }
+    
+    .account-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .account-row strong {
+      min-width: 100px;
+      color: #2d3436;
+    }
+    
+    .muted {
+      color: #6c757d;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 15px 30px;
+      background: #e74c3c;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background 0.3s;
+      width: 100%;
+      margin-top: 20px;
+    }
+    
+    .btn:hover {
+      background: #c0392b;
+    }
+    
+    .btn:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
+    }
+    
+    .error {
+      color: #e74c3c;
+      margin: 15px 0;
+      padding: 10px;
+      background: #fdf2f2;
+      border-radius: 6px;
+      border-left: 4px solid #e74c3c;
+    }
+    
+    .success {
+      color: #27ae60;
+      margin: 15px 0;
+      padding: 10px;
+      background: #f0f9ff;
+      border-radius: 6px;
+      border-left: 4px solid #27ae60;
+    }
+    
+    .footer {
+      background: #2d3436;
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+    }
+    
+    .footer-section h3 {
+      margin-bottom: 15px;
+      color: #a29bfe;
+    }
+    
+    .footer-section a {
+      color: #b2bec3;
+      text-decoration: none;
+      display: block;
+      margin: 5px 0;
+    }
+    
+    .footer-section a:hover {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- <div class="header active " data-section-id="header" data-section-type="header-section" bis_skin_checked="1">    <div class="promo-bar promo-bar--link promo-bar--animate" style="background-color: #523bff;" bis_skin_checked="1">
+    <p class="promo-bar__text promo-bar__text--upcase" style="color: #FFFFFF;">
+      <span> Free Shipping On Orders Over $50!</span>
+
+      <a href="/nectar" aria-label="Free Shipping On Orders Over $50!" bis_skin_checked="1"></a>
+
+    </p>
+  </div> -->
+
+  <div class="header__container header__container--small" bis_skin_checked="1">
+    <nav class="header__nav header__nav--center" role="navigation">
+      <ul class="header__nav__main-list header__nav__main-list--oversized main-list-width--auto">
+        <li>
+          <a class="header-link--med" href="/home">Home</a>
+        </li>
+        <li>
+          <a class="header-link--med" href="/nectar" bis_skin_checked="1">Nectar</a>
+        </li>
+        <li>
+          <a class="header-link--med" href="/contact" bis_skin_checked="1">Contact</a>
+        </li>        </ul>
+      <button class="header__nav__dropdown-toggle" title="Toggle menu" data-toggle-mega-menu="">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="header__oversized-dropdown" data-mega-menu="" bis_skin_checked="1">
+        <ul class="header__oversized-dropdown__main-list">            <li>
+            <a class="large" href="/home"><span>Home</span></a>
+
+          </li>            <li>
+            <a class="large" href="/nectar" bis_skin_checked="1"><span>Nectar</span></a>
+
+          </li>            <li>
+            <a class="large" href="/contact" bis_skin_checked="1"><span>Contact</span></a>
+
+          </li>
+
+        </ul>
+
+        <div class="main-list__actions" bis_skin_checked="1">
+
+                      <a class="large" href="/my-account" bis_skin_checked="1">
+
+            <!--?xml version="1.0" encoding="UTF-8"?-->
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50px"
+              height="50px" viewBox="0 0 50 50" version="1.1">
+              <g id="surface1">
+                <path style=" stroke:none;fill-rule:nonzero;fill:currentColor;fill-opacity:1;" fill="currentColor"
+                  d="M 50 24.976562 C 50 11.1875 38.800781 0 25 0 C 11.199219 0 0 11.1875 0 24.976562 C 0 32.570312 3.449219 39.414062 8.851562 44.007812 C 8.898438 44.054688 8.949219 44.054688 8.949219 44.105469 C 9.398438 44.457031 9.851562 44.804688 10.351562 45.15625 C 10.601562 45.304688 10.800781 45.503906 11.050781 45.703125 C 15.179688 48.503906 20.058594 50 25.050781 50 C 30.042969 50 34.917969 48.503906 39.050781 45.703125 C 39.300781 45.554688 39.5 45.355469 39.75 45.203125 C 40.199219 44.855469 40.699219 44.507812 41.148438 44.15625 C 41.199219 44.105469 41.25 44.105469 41.25 44.054688 C 46.550781 39.410156 50 32.570312 50 24.976562 Z M 25 46.851562 C 20.300781 46.851562 16 45.351562 12.449219 42.855469 C 12.5 42.457031 12.601562 42.058594 12.699219 41.660156 C 12.996094 40.574219 13.433594 39.535156 14 38.5625 C 14.550781 37.613281 15.199219 36.761719 16 36.011719 C 16.75 35.261719 17.648438 34.566406 18.550781 34.015625 C 19.5 33.464844 20.5 33.066406 21.601562 32.765625 C 22.707031 32.46875 23.851562 32.316406 25 32.320312 C 28.410156 32.292969 31.691406 33.601562 34.148438 35.960938 C 35.300781 37.113281 36.199219 38.460938 36.851562 40.007812 C 37.199219 40.910156 37.449219 41.859375 37.601562 42.855469 C 33.910156 45.449219 29.511719 46.847656 25 46.851562 Z M 17.351562 23.726562 C 16.910156 22.71875 16.6875 21.628906 16.699219 20.527344 C 16.699219 19.429688 16.898438 18.332031 17.351562 17.332031 C 17.800781 16.332031 18.398438 15.433594 19.148438 14.683594 C 19.898438 13.933594 20.800781 13.335938 21.800781 12.886719 C 22.800781 12.4375 23.898438 12.238281 25 12.238281 C 26.148438 12.238281 27.199219 12.4375 28.199219 12.886719 C 29.199219 13.335938 30.101562 13.9375 30.851562 14.683594 C 31.601562 15.433594 32.199219 16.335938 32.648438 17.332031 C 33.101562 18.332031 33.300781 19.429688 33.300781 20.527344 C 33.300781 21.679688 33.101562 22.726562 32.648438 23.726562 C 32.214844 24.710938 31.605469 25.609375 30.851562 26.375 C 30.082031 27.128906 29.183594 27.738281 28.199219 28.171875 C 26.132812 29.019531 23.816406 29.019531 21.75 28.171875 C 20.765625 27.738281 19.867188 27.128906 19.101562 26.375 C 18.34375 25.621094 17.746094 24.71875 17.351562 23.726562 ">
+                </path>
+              </g>
+            </svg>
+
+          </a>          </div>        </div>
+    </nav>
+
+    <header class="header__logo header__logo--center" role="banner">
+      <h1 itemscope="" itemtype="http://schema.org/Organization">
+        <a href="/home" itemprop="url" class="header__logo__image small">Hummingbird Food</a>
+      </h1>
+    </header>
+
+    <nav class="header__nav header__nav--right" role="navigation">
+      <!-- <ul class="header__nav__main-list med">
+        <li>
+          <a class="header__nav__user" href="#" id="accountLink">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50px" height="50px" viewBox="0 0 50 50" version="1.1">
+              <g id="surface1">
+                <path style=" stroke:none;fill-rule:nonzero;fill:currentColor;fill-opacity:1;" fill="currentColor" d="M 50 24.976562 C 50 11.1875 38.800781 0 25 0 C 11.199219 0 0 11.1875 0 24.976562 C 0 32.570312 3.449219 39.414062 8.851562 44.007812 C 8.898438 44.054688 8.949219 44.054688 8.949219 44.105469 C 9.398438 44.457031 9.851562 44.804688 10.351562 45.15625 C 10.601562 45.304688 10.800781 45.503906 11.050781 45.703125 C 15.179688 48.503906 20.058594 50 25.050781 50 C 30.042969 50 34.917969 48.503906 39.050781 45.703125 C 39.300781 45.554688 39.5 45.355469 39.75 45.203125 C 40.199219 44.855469 40.699219 44.507812 41.148438 44.15625 C 41.199219 44.105469 41.25 44.105469 41.25 44.054688 C 46.550781 39.410156 50 32.570312 50 24.976562 Z M 25 46.851562 C 20.300781 46.851562 16 45.351562 12.449219 42.855469 C 12.5 42.457031 12.601562 42.058594 12.699219 41.660156 C 12.996094 40.574219 13.433594 39.535156 14 38.5625 C 14.550781 37.613281 15.199219 36.761719 16 36.011719 C 16.75 35.261719 17.648438 34.566406 18.550781 34.015625 C 19.5 33.464844 20.5 33.066406 21.601562 32.765625 C 22.707031 32.46875 23.851562 32.316406 25 32.320312 C 28.410156 32.292969 31.691406 33.601562 34.148438 35.960938 C 35.300781 37.113281 36.199219 38.460938 36.851562 40.007812 C 37.199219 40.910156 37.449219 41.859375 37.601562 42.855469 C 33.910156 45.449219 29.511719 46.847656 25 46.851562 Z M 17.351562 23.726562 C 16.910156 22.71875 16.6875 21.628906 16.699219 20.527344 C 16.699219 19.429688 16.898438 18.332031 17.351562 17.332031 C 17.800781 16.332031 18.398438 15.433594 19.148438 14.683594 C 19.898438 13.933594 20.800781 13.335938 21.800781 12.886719 C 22.800781 12.4375 23.898438 12.238281 25 12.238281 C 26.148438 12.238281 27.199219 12.4375 28.199219 12.886719 C 29.199219 13.335938 30.101562 13.9375 30.851562 14.683594 C 31.601562 15.433594 32.199219 16.335938 32.648438 17.332031 C 33.101562 18.332031 33.300781 19.429688 33.300781 20.527344 C 33.300781 21.679688 33.101562 22.726562 32.648438 23.726562 C 32.214844 24.710938 31.605469 25.609375 30.851562 26.375 C 30.082031 27.128906 29.183594 27.738281 28.199219 28.171875 C 26.132812 29.019531 23.816406 29.019531 21.75 28.171875 C 20.765625 27.738281 19.867188 27.128906 19.101562 26.375 C 18.34375 25.621094 17.746094 24.71875 17.351562 23.726562 "></path>
+              </g>
+            </svg>
+          </a>
+          <div id="accountDropdown" style="position:absolute; right:16px; top:60px; background:#fff; border:1px solid #eee; padding:10px; display:none; min-width:180px; box-shadow:0 2px 10px rgba(0,0,0,.1)">
+            <div id="accountInfo" style="margin-bottom:8px; color:#333;"></div>
+            <button id="logoutBtn" class="btn">Logout</button>
+          </div>
+          <script>
+            (function(){
+              const API_BASE = 'http://localhost:8000';
+              const link = document.getElementById('accountLink');
+              const dropdown = document.getElementById('accountDropdown');
+              const info = document.getElementById('accountInfo');
+              const logoutBtn = document.getElementById('logoutBtn');
+              function setLink(isLoggedIn, username){
+                link.dataset.state = isLoggedIn ? 'logged-in' : 'logged-out';
+                link.title = isLoggedIn ? (username || 'Logout') : 'Login';
+                if(!isLoggedIn){ dropdown.style.display = 'none'; }
+                if(isLoggedIn){ info.textContent = username || ''; }
+              }
+              function getCookie(name){
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+              }
+              async function fetchMe(){
+                try{
+                  const res = await fetch(`${API_BASE}/api/auth/me/`, {credentials:'include'});
+                  const data = await res.json();
+                  setLink(!!data.id, data.username || data.email);
+                }catch(e){ setLink(false); }
+              }
+              link.addEventListener('click', async function(e){
+                e.preventDefault();
+                if(link.dataset.state==='logged-in'){ window.location.href = '/account'; }
+                else { window.location.href = '/login'; }
+              });
+              logoutBtn.addEventListener('click', async function(){
+                await fetch(`${API_BASE}/api/auth/logout/`,{method:'POST', credentials:'include', headers:{'X-CSRFToken': getCookie('csrftoken')}});
+                setLink(false);
+              });
+              fetchMe();
+            })();
+          </script>
+        </li>
+
+        <li>
+                      <a class="header__nav__bag" href="/cart" data-toggle-bag="">
+            <span class="header__nav__bag__container">
+              <svg viewBox="0 -31 512.00026 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor">
+                <path d="m164.960938 300.003906h.023437c.019531 0 .039063-.003906.058594-.003906h271.957031c6.695312 0 12.582031-4.441406 14.421875-10.878906l60-210c1.292969-4.527344.386719-9.394532-2.445313-13.152344-2.835937-3.757812-7.269531-5.96875-11.976562-5.96875h-366.632812l-10.722657-48.253906c-1.527343-6.863282-7.613281-11.746094-14.644531-11.746094h-90c-8.285156 0-15 6.714844-15 15s6.714844 15 15 15h77.96875c1.898438 8.550781 51.3125 230.917969 54.15625 243.710938-15.941406 6.929687-27.125 22.824218-27.125 41.289062 0 24.8125 20.1875 45 45 45h272c8.285156 0 15-6.714844 15-15s-6.714844-15-15-15h-272c-8.269531 0-15-6.730469-15-15 0-8.257812 6.707031-14.976562 14.960938-14.996094zm312.152343-210.003906-51.429687 180h-248.652344l-40-180zm0 0"></path>
+                <path d="m150 405c0 24.8125 20.1875 45 45 45s45-20.1875 45-45-20.1875-45-45-45-45 20.1875-45 45zm45-15c8.269531 0 15 6.730469 15 15s-6.730469 15-15 15-15-6.730469-15-15 6.730469-15 15-15zm0 0"></path>
+                <path d="m362 405c0 24.8125 20.1875 45 45 45s45-20.1875 45-45-20.1875-45-45-45-45 20.1875-45 45zm45-15c8.269531 0 15 6.730469 15 15s-6.730469 15-15 15-15-6.730469-15-15 6.730469-15 15-15zm0 0"></path>
+              </svg>
+              <span class="bag__item-alert bag__item-alert--icon-pack-1 is-visible"></span>
+            </span>
+          </a>
+        </li>
+      </ul> -->
+    </nav>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="auth-container">
+    <div class="account-card">
+      <h2>MY ACCOUNT</h2>
+      <div id="accountState" class="muted">Loading account information...</div>
+      <div id="accountInfo" style="display:none">
+        <div class="account-row">
+          <strong>Username:</strong> 
+          <span id="accUsername"></span>
+        </div>
+        <div class="account-row">
+          <strong>Email:</strong> 
+          <span id="accEmail"></span>
+        </div>
+        <button class="btn" id="logoutBtn">LOGOUT</button>
+        <div id="logoutStatus"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Simple Footer -->
+  <div class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>QUICK LINKS</h3>
+        <a href="/home">Home</a>
+        <a href="/nectar">Nectar</a>
+        <a href="/contact">Contact</a>
+      </div>
+      <div class="footer-section">
+        <h3>FOLLOW US</h3>
+        <a href="#">Facebook</a>
+        <a href="#">Instagram</a>
+        <a href="#">Twitter</a>
+      </div>
+      <div class="footer-section">
+        <h3>SIGN UP FOR OUR NEWSLETTER</h3>
+        <a href="/signup">Subscribe</a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const API_BASE = 'http://localhost:8000';
+    
+    console.log('My Account page script starting...');
+    
+    // Ensure CSRF cookie is available on first load
+    (function ensureCsrf(){
+      try {
+        console.log('Setting up CSRF cookie...');
+        fetch(`${API_BASE}/api/auth/me/`, { credentials: 'include' });
+      } catch (e) { 
+        console.error('CSRF setup error:', e);
+      }
+    })();
+    
+    function getCookie(name){
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    
+    async function init() {
+      console.log('Initializing account page...');
+      
+      const stateEl = document.getElementById('accountState');
+      const infoWrap = document.getElementById('accountInfo');
+      const userEl = document.getElementById('accUsername');
+      const emailEl = document.getElementById('accEmail');
+      
+      console.log('DOM elements found:', {
+        stateEl: !!stateEl,
+        infoWrap: !!infoWrap,
+        userEl: !!userEl,
+        emailEl: !!emailEl
+      });
+      
+      if (!stateEl || !infoWrap || !userEl || !emailEl) {
+        console.error('Required DOM elements not found:', {
+          stateEl: !!stateEl,
+          infoWrap: !!infoWrap,
+          userEl: !!userEl,
+          emailEl: !!emailEl
+        });
+        return;
+      }
+      
+      try {
+        console.log('Fetching user info...');
+        const res = await fetch(`${API_BASE}/api/auth/me/`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+        
+        console.log('User info response:', res.status);
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const me = await res.json();
+        console.log('User data:', me);
+        
+        if (!me.id) {
+          console.log('No user ID, redirecting to login...');
+          window.location.href = '/login';
+          return;
+        }
+        
+        console.log('Updating DOM with user info...');
+        
+        // Hide loading state
+        if (stateEl) stateEl.style.display = 'none';
+        
+        // Show account info
+        if (infoWrap) {
+          infoWrap.style.display = 'block';
+          console.log('Account info wrapper displayed');
+        }
+        
+        // Update username
+        if (userEl) {
+          userEl.textContent = me.username || 'N/A';
+          console.log('Username updated:', me.username);
+        }
+        
+        // Update email
+        if (emailEl) {
+          emailEl.textContent = me.email || 'N/A';
+          console.log('Email updated:', me.email);
+        }
+        
+        console.log('DOM updated successfully');
+        
+        // Setup logout button
+        setupLogoutButton();
+        
+      } catch (e) {
+        console.error('Account init error:', e);
+        window.location.href = '/login';
+      }
+    }
+
+    function setupLogoutButton() {
+      console.log('Setting up logout button...');
+      
+      const logoutBtn = document.getElementById('logoutBtn');
+      const logoutStatus = document.getElementById('logoutStatus');
+      
+      console.log('Logout button found:', !!logoutBtn);
+      console.log('Logout status element found:', !!logoutStatus);
+      
+      if (!logoutBtn) {
+        console.error('Logout button not found!');
+        return;
+      }
+      
+      // Add click event listener
+      logoutBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Logout button clicked! Event:', e);
+        
+        // Disable button and show loading
+        this.disabled = true;
+        this.textContent = 'LOGGING OUT...';
+        
+        if (logoutStatus) {
+          logoutStatus.innerHTML = '';
+        }
+        
+        try {
+          const csrfToken = getCookie('csrftoken');
+          console.log('CSRF token:', csrfToken);
+          
+          if (!csrfToken) {
+            throw new Error('CSRF token not found');
+          }
+          
+          console.log('Sending logout request...');
+          const res = await fetch(`${API_BASE}/api/auth/logout/`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken,
+              'Accept': 'application/json',
+            }
+          });
+          
+          console.log('Logout response:', res.status);
+          
+          if (!res.ok) {
+            throw new Error(`Logout failed: ${res.status}`);
+          }
+          
+          const result = await res.json();
+          console.log('Logout successful:', result);
+          
+          // Show success message briefly then redirect
+          if (logoutStatus) {
+            logoutStatus.innerHTML = '<div class="success">Logout successful! Redirecting to login...</div>';
+          }
+          
+          setTimeout(() => {
+            console.log('Redirecting to login...');
+            window.location.href = '/login';
+          }, 1500);
+          
+        } catch (error) {
+          console.error('Logout error:', error);
+          if (logoutStatus) {
+            logoutStatus.innerHTML = `<div class="error">Logout failed: ${error.message}</div>`;
+          }
+          
+          // Re-enable button
+          this.disabled = false;
+          this.textContent = 'LOGOUT';
+        }
+      });
+      
+      console.log('Logout button setup complete');
+      
+      // Test if button is clickable
+      setTimeout(() => {
+        console.log('Testing logout button...');
+        const testBtn = document.getElementById('logoutBtn');
+        if (testBtn) {
+          console.log('Button text:', testBtn.textContent);
+          console.log('Button disabled:', testBtn.disabled);
+          console.log('Button event listeners:', testBtn.onclick ? 'onclick handler present' : 'no onclick handler');
+        }
+      }, 500);
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+    
+    console.log('Script initialization complete');
+  </script>
+</body>
+</html>
+
+
