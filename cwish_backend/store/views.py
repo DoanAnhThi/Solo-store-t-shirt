@@ -272,22 +272,47 @@ class OrderViewSet(viewsets.ModelViewSet):
         """Tạo đơn hàng mới"""
         serializer = self.get_serializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            order = serializer.save()
+            order_result = serializer.save()
 
-            # Gửi order đến Shirtigo API
-            shirtigo_response = self._send_to_shirtigo(order)
+            # Handle case where serializer returns a list or single object
+            if isinstance(order_result, list):
+                # Multiple orders created
+                orders = order_result
+                primary_order = orders[0] if orders else None
+            else:
+                # Single order created
+                orders = [order_result]
+                primary_order = order_result
+
+            if not primary_order:
+                return Response(
+                    {'error': 'No orders were created'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Gửi order đến Shirtigo API (chỉ gửi primary order)
+            shirtigo_response = self._send_to_shirtigo(primary_order)
 
             # Cập nhật order với Shirtigo response
             if shirtigo_response and 'id' in shirtigo_response:
-                order.shirtigo_order_id = shirtigo_response['id']
-                order.shirtigo_response = shirtigo_response
-                order.save()
+                primary_order.shirtigo_order_id = shirtigo_response['id']
+                primary_order.shirtigo_response = shirtigo_response
+                primary_order.save()
 
-            response_serializer = OrderSerializer(order)
-            response_data = response_serializer.data
+            # Serialize response - if multiple orders, return array, else single object
+            if len(orders) == 1:
+                response_serializer = OrderSerializer(primary_order)
+                response_data = response_serializer.data
+            else:
+                response_serializer = OrderSerializer(orders, many=True)
+                response_data = response_serializer.data
 
             # Thêm thông tin Shirtigo vào response
-            response_data['shirtigo_response'] = shirtigo_response
+            if isinstance(response_data, list):
+                for item in response_data:
+                    item['shirtigo_response'] = shirtigo_response
+            else:
+                response_data['shirtigo_response'] = shirtigo_response
 
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

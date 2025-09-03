@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - T-shirt Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- PayPal SDK -->
-    <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
+    <!-- PayPal SDK is dynamically loaded by paypal-integration.js with the correct Client ID -->
     <script src="./paypal-integration.js"></script>
     <style>
         * {
@@ -478,8 +477,7 @@
                     </div>
                 </div>
 
-                <!-- nút giả lập PayPal thanh toán thành công -->
-                <button id="createOrderBtn">🎭 Test: Giả lập PayPal thanh toán</button>
+                <!-- Test button removed for production-like flow -->
             </div>
         </div>
 
@@ -868,23 +866,17 @@
             
             // Wait for both PayPal SDK and our integration to be ready
             const initializePayPal = () => {
-                if (typeof paypal !== 'undefined' && typeof PayPalIntegration !== 'undefined') {
-                    console.log('PayPal SDK and integration class ready, creating instance...');
-                    
-                    // Create PayPal integration instance
+                // Khởi tạo integration ngay khi class có sẵn; SDK sẽ được class tự load
+                if (typeof PayPalIntegration !== 'undefined') {
+                    console.log('Creating PayPal integration instance (SDK will be loaded by class)...');
                     window.paypalIntegration = new PayPalIntegration();
                     console.log('PayPal integration instance created');
-                    
-                    // Setup custom error handling and form validation
                     setupCustomHandlers();
-                    
-                } else {
-                    console.log('Waiting for PayPal SDK and integration...', {
-                        paypalSDK: typeof paypal !== 'undefined',
-                        integration: typeof PayPalIntegration !== 'undefined'
-                    });
-                    setTimeout(initializePayPal, 100);
+                    return;
                 }
+
+                console.log('Waiting for PayPal integration class...');
+                setTimeout(initializePayPal, 100);
             };
             
             initializePayPal();

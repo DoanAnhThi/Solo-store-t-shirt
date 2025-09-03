@@ -77,8 +77,39 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         main_cart_items = UserCart.objects.filter(user=user)
         bonus_cart_items = BonusCart.objects.filter(user=user)
         
+        # Nếu giỏ hàng trống, cho phép tạo đơn trực tiếp từ payload (fallback cho frontend hiện tại)
         if not main_cart_items.exists() and not bonus_cart_items.exists():
-            raise serializers.ValidationError("No items in cart")
+            request = self.context.get('request')
+            payload_items = []
+            try:
+                payload_items = (request.data.get('items') or []) if request else []
+            except Exception:
+                payload_items = []
+
+            # Lấy sản phẩm đang active (website 1 sản phẩm)
+            main_product = SingleProduct.objects.filter(is_active=True).first()
+            if not main_product:
+                raise serializers.ValidationError("No active product available")
+
+            quantity = 0
+            try:
+                for it in payload_items:
+                    q = int(it.get('quantity') or 0)
+                    quantity += q
+            except Exception:
+                quantity = 0
+            if quantity <= 0:
+                quantity = 1
+
+            order = Order.objects.create(
+                user=user,
+                main_product=main_product,
+                quantity=quantity,
+                unit_price=main_product.price,
+                total_amount=quantity * main_product.price,
+                **validated_data
+            )
+            return order
         
         orders = []
         
@@ -86,7 +117,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         for cart_item in main_cart_items:
             order = Order.objects.create(
                 user=user,
-                product=cart_item.product,
+                main_product=cart_item.product,
                 quantity=cart_item.quantity,
                 unit_price=cart_item.product.price,
                 total_amount=cart_item.total_price,
@@ -98,7 +129,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         for cart_item in bonus_cart_items:
             order = Order.objects.create(
                 user=user,
-                product=cart_item.product,
+                bonus_product=cart_item.product,
                 quantity=cart_item.quantity,
                 unit_price=cart_item.product.price,
                 total_amount=cart_item.total_price,

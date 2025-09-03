@@ -1,6 +1,9 @@
 // PayPal Integration for T-shirt Store
 class PayPalIntegration {
     constructor() {
+        // *** Live Andreas account
+        // this.paypalClientId = 'ENaMSdvm4ATz6XfV7r9r_5mGNf3EmHiiKDc2XcfLtJe8t21DAtzBuA86TuuZ5AXcwpFFdbYsCi0y85Kd'; // Thay thế bằng Client ID thực tế
+        // *** Sandbox Thi account
         this.paypalClientId = 'AUTJCGZY2VvXmJIqCJ7kFO5DD_ESho40dm95S1XKJolyryezuz9XQJgFrKCDsR1YLUvWTItMq7B_jRVG'; // Thay thế bằng Client ID thực tế
         this.environment = 'sandbox'; // 'sandbox' cho testing, 'production' cho live
         this.isTestMode = false; // Flag để track test mode
@@ -41,7 +44,7 @@ class PayPalIntegration {
         }
 
         console.log('PayPal SDK loaded successfully');
-        
+
         // Tạo PayPal buttons
         this.createPayPalButtons();
     }
@@ -84,7 +87,7 @@ class PayPalIntegration {
                     this.handlePaymentCancel(data);
                 }
             });
-            
+
             if (buttons.isEligible()) {
                 buttons.render(paypalContainer);
                 console.log('PayPal buttons rendered successfully');
@@ -103,7 +106,7 @@ class PayPalIntegration {
             console.log('createOrder method called with actions:', actions);
             console.log('Actions object:', actions);
             console.log('Actions type:', typeof actions);
-            
+
             // Lấy thông tin giỏ hàng
             const cartData = this.getCartData();
             if (!cartData || !cartData.items || cartData.items.length === 0) {
@@ -173,117 +176,186 @@ class PayPalIntegration {
                 }
             });
 
-                            console.log('PayPal order created successfully:', order);
-                console.log('Order ID:', order);
-                console.log('Order object type:', typeof order);
-                
-                // PayPal SDK returns order ID directly as string, not as object with id property
-                if (typeof order === 'string') {
-                    console.log('Order ID is string:', order);
-                    if (!order || order.length === 0) {
-                        console.error('PayPal order created but order ID is empty string:', order);
-                        throw new Error('PayPal order created but order ID is empty');
-                    }
-                    return order;
-                } else if (typeof order === 'object' && order.id) {
-                    console.log('Order ID from object:', order.id);
-                    return order.id;
-                } else {
-                    console.error('PayPal order created but order format is unexpected:', order);
-                    console.log('Order object keys:', Object.keys(order || {}));
-                    throw new Error('PayPal order created but order format is unexpected');
+            console.log('PayPal order created successfully:', order);
+            console.log('Order ID:', order);
+            console.log('Order object type:', typeof order);
+
+            // PayPal SDK returns order ID directly as string, not as object with id property
+            if (typeof order === 'string') {
+                console.log('Order ID is string:', order);
+                if (!order || order.length === 0) {
+                    console.error('PayPal order created but order ID is empty string:', order);
+                    throw new Error('PayPal order created but order ID is empty');
                 }
+                return order;
+            } else if (typeof order === 'object' && order.id) {
+                console.log('Order ID from object:', order.id);
+                return order.id;
+            } else {
+                console.error('PayPal order created but order format is unexpected:', order);
+                console.log('Order object keys:', Object.keys(order || {}));
+                throw new Error('PayPal order created but order format is unexpected');
+            }
 
         } catch (error) {
             console.error('Error creating PayPal order:', error);
             // Hide loading state on error
             this.hideLoading();
-            
+
             // Also hide loading from checkout page if available
             if (typeof hideLoading === 'function') {
                 hideLoading();
             }
-            
+
             throw error;
         }
     }
 
     async handlePaymentSuccess(data, actions) {
+        console.log('✅ PayPal handlePaymentSuccess called');
+        console.log('📋 Payment data received:', data);
+
+        // Reset all messages to initial state
+        this.resetMessages();
+
         try {
             // Capture payment
+            console.log('🔄 Starting payment capture...');
             const order = await actions.order.capture();
-            
+            console.log('✅ Payment captured successfully:', order);
+
             // Hide loading state
             this.hideLoading();
-            
+
             // Also hide loading from checkout page if available
             if (typeof hideLoading === 'function') {
                 hideLoading();
             }
-            
+
             // Xử lý thanh toán thành công
+            console.log('🔄 Processing successful payment...');
             await this.processSuccessfulPayment(order);
-            
+
+            console.log('✅ processSuccessfulPayment completed, now showing success message...');
+
             // Hiển thị thông báo thành công
+            console.log('🎉 Showing success message...');
             this.showSuccessMessage(order);
-            
+
+            console.log('✅ Payment flow completed successfully');
             return order;
 
         } catch (error) {
-            console.error('Error capturing payment:', error);
+            console.error('❌ Error in handlePaymentSuccess:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                name: error.name,
+                stack: error.stack
+            });
+
             this.hideLoading();
+
+            // Check if this is a client ID mismatch error
+            if (error.message && error.message.includes('order')) {
+                console.error('🚨 Possible Client ID mismatch! The Client ID in your code may not match the PayPal account you used to pay.');
+                console.error('💡 Solution: Update the paypalClientId in paypal-integration.js to match your sandbox account.');
+            }
+
             this.handlePaymentError(error);
         }
     }
 
     async processSuccessfulPayment(order) {
+        console.log('🚀 processSuccessfulPayment STARTED');
+        console.log('📋 PayPal order object:', order);
+
         try {
             // Lấy thông tin khách hàng
             const customerData = this.getCustomerData();
-            
-            // Tạo order data
+
+            console.log('📋 Customer data for backend:', customerData);
+            console.log('✅ Customer data retrieved successfully');
+
+            // Tạo order data theo đúng format mà backend mong đợi
+            // Backend OrderCreateSerializer chỉ cần: email, first_name, last_name, address, city, country, postal_code, phone
             const orderData = {
+                // Thông tin khách hàng (snake_case như backend mong đợi)
+                email: customerData.email,
+                first_name: customerData.firstName,  // camelCase → snake_case
+                last_name: customerData.lastName,    // camelCase → snake_case
+                address: customerData.address,
+                city: customerData.city,
+                country: customerData.country,
+                postal_code: customerData.zipCode,   // zipCode → postal_code
+                phone: customerData.phone
+            };
+
+            // Lưu thông tin PayPal riêng biệt để debug (backend không lưu)
+            const paypalInfo = {
                 paypalOrderId: order.id,
                 paypalTransactionId: order.purchase_units[0].payments.captures[0].id,
-                customer: customerData,
-                items: this.getCartData().items,
                 total: parseFloat(order.purchase_units[0].amount.value),
                 paymentMethod: 'PayPal',
                 paymentStatus: 'completed',
                 orderDate: new Date().toISOString(),
+                items: this.getCartData().items,
                 paypalData: order
             };
 
-            // Gửi order đến backend
-            await this.sendOrderToBackend(orderData, this.isTestMode);
+            console.log('💳 PayPal transaction details:', paypalInfo);
 
-            // Lưu order vào localStorage
-            this.saveOrderLocally(orderData);
+            console.log('📤 Sending order data to backend:', orderData);
+
+            // Gửi order đến backend
+            console.log('🔄 Sending request to backend...');
+            const backendResponse = await this.sendOrderToBackend(orderData, this.isTestMode, paypalInfo);
+            console.log('✅ Backend response:', backendResponse);
+
+            // Lưu order vào localStorage (bao gồm cả thông tin PayPal)
+            this.saveOrderLocally({
+                ...orderData,
+                ...paypalInfo,
+                backendResponse: backendResponse
+            });
 
             // Xóa giỏ hàng
             this.clearCart();
 
+            console.log('✅ processSuccessfulPayment COMPLETED SUCCESSFULLY');
+
         } catch (error) {
-            console.error('Error processing successful payment:', error);
+            console.error('❌ Error in processSuccessfulPayment:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                name: error.name,
+                stack: error.stack
+            });
             throw error;
         }
     }
 
-    async sendOrderToBackend(orderData, isTestModeOverride = null) {
+    async sendOrderToBackend(orderData, isTestModeOverride = null, paypalInfo = null) {
         try {
-            // Sử dụng endpoint test đơn giản cho nút test
-            const isTestMode = isTestModeOverride !== null ? isTestModeOverride : this.isTestMode;
-            const endpoint = isTestMode ? 'http://localhost:8000/api/test-order/' : 'http://localhost:8000/api/orders/create/';
+            // Luôn dùng endpoint production để tạo order thật
+            const isTestMode = false;
+            const endpoint = 'http://localhost:8000/api/orders/';
 
             console.log(`📡 Using endpoint: ${endpoint} (test mode: ${isTestMode})`);
 
             console.log(`📤 Sending request to: ${endpoint}`);
             console.log(`📦 Request data:`, orderData);
 
+            // Đảm bảo có CSRF cookie trước khi POST (Django yêu cầu khi dùng session)
+            await this.ensureCsrfCookie();
+
+            const csrfToken = this.getCsrfToken();
+
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    // Gửi CSRF token nếu có (phòng tránh 403 Forbidden)
+                    'X-CSRFToken': csrfToken || ''
                 },
                 credentials: 'include',
                 body: JSON.stringify(orderData)
@@ -291,6 +363,7 @@ class PayPalIntegration {
 
             console.log(`📥 Response status: ${response.status}`);
             console.log(`📄 Response headers:`, [...response.headers.entries()]);
+            console.log(`📊 Response ok: ${response.ok}`);
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -298,7 +371,17 @@ class PayPalIntegration {
                 throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
             }
 
-            const responseData = await response.json();
+            console.log('🔄 Parsing JSON response...');
+            let responseData;
+            try {
+                const responseText = await response.text();
+                console.log('📄 Raw response text:', responseText);
+                responseData = JSON.parse(responseText);
+                console.log('✅ JSON parsed successfully');
+            } catch (parseError) {
+                console.error('❌ JSON parse error:', parseError);
+                throw new Error(`JSON parse error: ${parseError.message}`);
+            }
 
             // Log status từ Shirtigo API ra console
             if (responseData.shirtigo_status) {
@@ -310,12 +393,48 @@ class PayPalIntegration {
                 }
             }
 
-            console.log(`📄 Response data:`, responseData);
+            console.log(`📄 Backend response data:`, responseData);
+
+            // Log ra console để debug
+            console.log('🎉 Payment process completed successfully!');
+            console.log('📋 Order details:');
+            if (paypalInfo) {
+                console.log('   - PayPal Order ID:', paypalInfo.paypalOrderId);
+                console.log('   - PayPal Transaction ID:', paypalInfo.paypalTransactionId);
+                console.log('   - Total Amount:', paypalInfo.total);
+            }
+            // Customer log removed to avoid referencing undefined variable
+
             return responseData;
 
         } catch (error) {
             console.error('Backend not available, storing locally only');
             throw error;
+        }
+    }
+
+    // -------- CSRF helpers for Django (session-based auth) --------
+    getCsrfToken() {
+        try {
+            const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+            return match ? decodeURIComponent(match[1]) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async ensureCsrfCookie() {
+        try {
+            if (this.getCsrfToken()) {
+                return;
+            }
+            // Endpoint có @ensure_csrf_cookie để set cookie
+            await fetch('http://localhost:8000/api/auth/me/', {
+                method: 'GET',
+                credentials: 'include'
+            });
+        } catch (e) {
+            console.warn('Could not ensure CSRF cookie:', e);
         }
     }
 
@@ -404,7 +523,7 @@ class PayPalIntegration {
             country: document.getElementById('country')?.value || '',
             notes: document.getElementById('notes')?.value || ''
         };
-        
+
         return customerData;
     }
 
@@ -424,10 +543,13 @@ class PayPalIntegration {
             name: error.name,
             type: typeof error
         });
-        
+
+        // Reset messages to clean state before showing error
+        this.resetMessages();
+
         // Hide loading state
         this.hideLoading();
-        
+
         // Provide more specific error messages based on error type
         let errorMessage = 'Payment failed. Please try again.';
         if (error.message) {
@@ -443,16 +565,16 @@ class PayPalIntegration {
                 errorMessage = 'Payment failed: System error. Please try again or contact support.';
             }
         }
-        
+
         // Hiển thị thông báo lỗi
         this.showErrorMessage(errorMessage);
-        
+
         // Enable lại nút thanh toán
         const paypalButton = document.getElementById('paypalButton');
         if (paypalButton) {
             paypalButton.disabled = false;
         }
-        
+
         // Also hide loading from checkout page if available
         if (typeof hideLoading === 'function') {
             hideLoading();
@@ -461,37 +583,83 @@ class PayPalIntegration {
 
     handlePaymentCancel(data) {
         console.log('Payment cancelled by user:', data);
-        
+
         // Hide loading state
         this.hideLoading();
-        
+
         // Hiển thị thông báo hủy
         this.showCancelMessage('Payment was cancelled.');
-        
+
         // Enable lại nút thanh toán
         const paypalButton = document.getElementById('paypalButton');
         if (paypalButton) {
             paypalButton.disabled = false;
         }
-        
+
         // Also hide loading from checkout page if available
         if (typeof hideLoading === 'function') {
             hideLoading();
         }
     }
 
-    showSuccessMessage(order) {
-        // Ẩn checkout content
+    resetMessages() {
+        console.log('🔄 Resetting all messages to initial state');
+
+        // Hide error message
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) {
+            errorMessage.style.display = 'none';
+        }
+
+        // Hide success message (let showSuccessMessage handle displaying it)
+        const successMessage = document.getElementById('successMessage');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+
+        // Show checkout content
         const checkoutContent = document.querySelector('.checkout-content');
         if (checkoutContent) {
+            checkoutContent.style.display = 'block';
+        }
+
+        console.log('✅ All messages reset');
+    }
+
+    showSuccessMessage(order) {
+        console.log('🎉 showSuccessMessage CALLED with order:', order);
+
+        // Ẩn error message trước nếu đang hiển thị
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) {
+            errorMessage.style.cssText = 'display: none !important;';
+            errorMessage.style.display = 'none';
+            console.log('✅ Error message hidden with force');
+        }
+
+        // Gọi function hideError từ HTML nếu có
+        if (typeof hideError === 'function') {
+            hideError();
+            console.log('✅ hideError function called');
+        }
+
+        // Ẩn checkout content
+        const checkoutContent = document.querySelector('.checkout-content');
+        console.log('📋 Checkout content element:', checkoutContent);
+        if (checkoutContent) {
             checkoutContent.style.display = 'none';
+            console.log('✅ Checkout content hidden');
         }
 
         // Hiển thị success message
         const successMessage = document.getElementById('successMessage');
+        console.log('📋 Success message element:', successMessage);
         if (successMessage) {
+            // Force hiển thị success message với !important style
+            successMessage.style.cssText = 'display: block !important;';
             successMessage.style.display = 'block';
-            
+            console.log('✅ Success message displayed with force');
+
             // Cập nhật order ID
             const orderIdElement = document.getElementById('orderId');
             if (orderIdElement) {
@@ -503,7 +671,7 @@ class PayPalIntegration {
     showErrorMessage(message) {
         // Tạo notification
         this.showNotification(message, 'error');
-        
+
         // Also show error in checkout page if available
         if (typeof showError === 'function') {
             showError(message);
@@ -531,7 +699,7 @@ class PayPalIntegration {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.textContent = message;
-        
+
         // Style cho notification
         notification.style.cssText = `
             position: fixed;
@@ -580,7 +748,7 @@ class PayPalIntegration {
 }
 
 // Khởi tạo PayPal Integration khi DOM load xong
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Chỉ khởi tạo PayPal nếu đang ở trang checkout
     if (window.location.pathname.includes('checkout.html')) {
         console.log('Initializing PayPal Integration...');
