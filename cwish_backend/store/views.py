@@ -10,6 +10,9 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
 from .models import SingleProduct, UserCart, Order, Contact, DigitalBonusProduct, BonusCart
 from .serializers import (
     SingleProductSerializer, UserCartSerializer, OrderSerializer,
@@ -299,6 +302,11 @@ class OrderViewSet(viewsets.ModelViewSet):
                 primary_order.shirtigo_response = shirtigo_response
                 primary_order.save()
 
+            # Gửi email xác nhận đơn hàng
+            email_sent = self._send_order_confirmation_email(primary_order)
+            if not email_sent:
+                print("⚠️ Cảnh báo: Không thể gửi email xác nhận, nhưng đơn hàng vẫn được tạo thành công")
+
             # Serialize response - if multiple orders, return array, else single object
             if len(orders) == 1:
                 response_serializer = OrderSerializer(primary_order)
@@ -386,6 +394,38 @@ class OrderViewSet(viewsets.ModelViewSet):
             print(f"❌ Unexpected error in _send_to_shirtigo: {e}")
             return None
 
+    def _send_order_confirmation_email(self, order):
+        """Gửi email xác nhận đơn hàng"""
+        try:
+            print(f"📧 Gửi email xác nhận đơn hàng cho {order.email}...")
+
+            # Render email template
+            html_content = render_to_string('emails/order_confirmation.html', {
+                'order': order,
+            })
+
+            # Tạo subject email
+            subject = f'Order Confirmation - Order #{order.id} - Cwish Store'
+
+            # Tạo email message
+            email = EmailMessage(
+                subject=subject,
+                body=html_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[order.email],
+            )
+            email.content_subtype = 'html'  # Đánh dấu đây là HTML email
+
+            # Gửi email
+            email.send()
+
+            print(f"✅ Email xác nhận đã được gửi thành công đến {order.email}")
+            return True
+
+        except Exception as e:
+            print(f"❌ Lỗi khi gửi email xác nhận: {e}")
+            return False
+
     @action(detail=True, methods=['patch'])
     def update_status(self, request, pk=None):
         """Cập nhật trạng thái đơn hàng (chỉ admin)"""
@@ -448,6 +488,11 @@ class OrderViewSet(viewsets.ModelViewSet):
                 order.shirtigo_order_id = shirtigo_response['id']
                 order.shirtigo_response = shirtigo_response
                 order.save()
+
+            # Gửi email xác nhận đơn hàng (cùng logic như create method)
+            email_sent = self._send_order_confirmation_email(order)
+            if not email_sent:
+                print("⚠️ Cảnh báo: Không thể gửi email xác nhận trong test mode, nhưng đơn hàng vẫn được tạo thành công")
 
             response_serializer = OrderSerializer(order)
             response_data = response_serializer.data
@@ -564,6 +609,11 @@ def simple_test_order(request):
             # Gửi đến Shirtigo API
             order_viewset = OrderViewSet()
             shirtigo_response = order_viewset._send_to_shirtigo(order)
+
+            # Gửi email xác nhận đơn hàng
+            email_sent = order_viewset._send_order_confirmation_email(order)
+            if not email_sent:
+                print("⚠️ Cảnh báo: Không thể gửi email xác nhận trong simple test, nhưng đơn hàng vẫn được tạo thành công")
 
             return JsonResponse({
                 'success': True,

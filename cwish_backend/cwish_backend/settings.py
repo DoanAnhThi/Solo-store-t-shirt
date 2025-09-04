@@ -195,3 +195,18 @@ SESSION_SAVE_EVERY_REQUEST = True
 CSRF_COOKIE_AGE = 86400
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_NAME = 'csrftoken'
+
+# Email configuration
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development in email ra log chứ không gửi
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # For production gửi email thật sự
+
+# Email settings (configure these for production)
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'thi.doan28499@gmail.com'
+EMAIL_HOST_PASSWORD = 'wyfultbqmpflhrkl'
+DEFAULT_FROM_EMAIL = 'Cwish Store <noreply@cwishstore.com>'
+
+# Email templates directory
+TEMPLATES[0]['DIRS'] = [os.path.join(BASE_DIR, 'templates')]
