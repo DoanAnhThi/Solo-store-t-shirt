@@ -115,22 +115,54 @@ class PayPalIntegration {
 
             console.log('Cart data for order:', cartData);
 
-            // Tạo danh sách items cho PayPal
-            const items = cartData.items.map(item => ({
-                name: item.product.name,
-                quantity: item.quantity.toString(),
-                unit_amount: {
-                    currency_code: 'USD',
-                    value: (parseFloat(item.total_price) / item.quantity).toFixed(2)
+            // Lấy bonus cart data từ sessionStorage (giống như checkout page)
+            let bonusCartData = null;
+            try {
+                const storedBonusCart = sessionStorage.getItem('bonusCartData');
+                if (storedBonusCart) {
+                    bonusCartData = JSON.parse(storedBonusCart);
                 }
-            }));
+            } catch (error) {
+                console.error('Error loading bonus cart data for PayPal:', error);
+            }
+
+            // Tạo danh sách items cho PayPal (bao gồm cả main và bonus products)
+            let items = [];
+
+            // Thêm main cart items
+            if (cartData.items && cartData.items.length > 0) {
+                const mainItems = cartData.items.map(item => ({
+                    name: item.product.name,
+                    quantity: item.quantity.toString(),
+                    unit_amount: {
+                        currency_code: 'USD',
+                        value: (parseFloat(item.total_price) / item.quantity).toFixed(2)
+                    }
+                }));
+                items = items.concat(mainItems);
+            }
+
+            // Thêm bonus cart items
+            if (bonusCartData && bonusCartData.items && bonusCartData.items.length > 0) {
+                const bonusItems = bonusCartData.items.map(item => ({
+                    name: `${item.product.name} (Bonus)`,
+                    quantity: item.quantity.toString(),
+                    unit_amount: {
+                        currency_code: 'USD',
+                        value: (parseFloat(item.total_price) / item.quantity).toFixed(2)
+                    }
+                }));
+                items = items.concat(bonusItems);
+            }
 
             console.log('PayPal items:', items);
 
-            // Tính toán tổng tiền
-            const subtotal = parseFloat(cartData.total_amount);
+            // Tính toán tổng tiền giống như checkout page
+            const mainSubtotal = parseFloat(cartData.total_amount || 0);
+            const bonusSubtotal = bonusCartData ? parseFloat(bonusCartData.total_amount || 0) : 0;
+            const subtotal = mainSubtotal + bonusSubtotal;
             const shipping = 5.99;
-            const tax = subtotal * 0.08;
+            const tax = subtotal * 0.08; // Tax được tính trên tổng subtotal (bao gồm bonus)
             const total = subtotal + shipping + tax;
 
             console.log('Creating PayPal order with total:', total);

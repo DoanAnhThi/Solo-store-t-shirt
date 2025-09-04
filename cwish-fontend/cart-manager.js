@@ -236,6 +236,12 @@ class CartManager {
         // Lưu cart data vào sessionStorage để checkout page có thể sử dụng
         sessionStorage.setItem('cartData', JSON.stringify(this.cartData));
 
+        // Lưu bonus cart data vào sessionStorage để checkout page có thể sử dụng
+        if (this.bonusCartData) {
+            sessionStorage.setItem('bonusCartData', JSON.stringify(this.bonusCartData));
+            console.log('Bonus cart data saved to sessionStorage:', this.bonusCartData);
+        }
+
         // Cập nhật số lượng trong mini-cart
         const cartQuantity = document.querySelector('.cart__item__qty .quantity-display');
         if (cartQuantity) {
@@ -734,9 +740,54 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Thêm event listener để khởi tạo lại khi minicart được load
+    // Thêm event listener để khởi tạo lại khi minicart được load
 document.addEventListener('minicartLoaded', function() {
     if (window.cartManager) {
         window.cartManager.updateCartDisplay();
     }
 });
+
+// Hàm xử lý click nút checkout trong minicart
+function handleCheckoutClick(event) {
+    event.preventDefault(); // Ngăn form submit hoặc action mặc định
+
+    console.log('🛒 Checkout button clicked, preparing data...');
+    console.log('CartManager available:', !!window.cartManager);
+
+    // Đảm bảo dữ liệu được lưu vào sessionStorage trước khi navigate
+    if (window.cartManager) {
+        console.log('✅ CartManager is ready, preparing cart data...');
+
+        // Force update cart display để lưu dữ liệu mới nhất
+        window.cartManager.updateCartDisplay();
+
+        // Cũng force refresh từ database để đảm bảo dữ liệu mới nhất
+        window.cartManager.loadCart().then(() => {
+            window.cartManager.loadBonusCart().then(() => {
+                // Update lại display sau khi load xong
+                window.cartManager.updateCartDisplay();
+
+                console.log('🚀 Cart data updated, navigating to checkout...');
+                // Thêm timestamp để checkout page biết cần load dữ liệu mới
+                const timestamp = Date.now();
+                setTimeout(() => {
+                    window.location.href = './checkout.html?refresh=' + timestamp;
+                }, 300); // Tăng delay để đảm bảo
+            }).catch(() => {
+                // Nếu bonus cart fail, vẫn navigate
+                const timestamp = Date.now();
+                window.location.href = './checkout.html?refresh=' + timestamp;
+            });
+        }).catch(() => {
+            // Nếu main cart fail, vẫn navigate với dữ liệu hiện có
+            console.log('🚀 Navigating with existing data...');
+            const timestamp = Date.now();
+            window.location.href = './checkout.html?refresh=' + timestamp;
+        });
+    } else {
+        console.log('⚠️ CartManager not ready, navigating directly...');
+        // Vẫn thêm timestamp để checkout biết cần refresh
+        const timestamp = Date.now();
+        window.location.href = './checkout.html?refresh=' + timestamp;
+    }
+}

@@ -283,6 +283,102 @@
             margin-bottom: 15px;
         }
 
+        .home-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .home-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .home-button i {
+            font-size: 14px;
+        }
+
+
+        .empty-cart-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .empty-cart-message p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .guest-notification {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .guest-notification-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .guest-notification i {
+            color: #2196f3;
+            font-size: 1.2rem;
+        }
+
+        .guest-notification-text {
+            flex: 1;
+        }
+
+        .guest-notification-text strong {
+            color: #1976d2;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .guest-notification-text p {
+            color: #666;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .guest-login-btn {
+            background: #2196f3;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .guest-login-btn:hover {
+            background: #1976d2;
+            transform: translateY(-1px);
+        }
+
+        .guest-login-btn i {
+            font-size: 0.8rem;
+        }
+
         .error-message {
             position: fixed;
             top: 0;
@@ -442,6 +538,20 @@
             <!-- Order Summary -->
             <div class="order-summary">
                 <h3><i class="fas fa-receipt"></i> Order Summary</h3>
+
+                <!-- Guest user notification -->
+                <div id="guestNotification" class="guest-notification" style="display: none;">
+                    <div class="guest-notification-content">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="guest-notification-text">
+                            <strong>You're shopping as a guest</strong>
+                            <p>Sign in to sync your cart across devices and save your order history.</p>
+                        </div>
+                        <a href="./login.html" class="guest-login-btn">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </a>
+                    </div>
+                </div>
                 
                 <div class="cart-items" id="cartItems">
                     <!-- Cart items will be populated here -->
@@ -452,6 +562,10 @@
                         <span>Subtotal:</span>
                         <span id="subtotal">$0.00</span>
                     </div>
+                    <!-- <div class="price-row" id="bonus-row" style="display: none;">
+                        <span>Bonus Products:</span>
+                        <span id="bonus-total">$0.00</span>
+                    </div> -->
                     <div class="price-row">
                         <span>Shipping:</span>
                         <span id="shipping">$0.00</span>
@@ -505,6 +619,9 @@
             <h2>Payment Successful!</h2>
             <p>Thank you for your purchase. You will receive a confirmation email shortly.</p>
             <p>Order ID: <strong id="orderId"></strong></p>
+            <button onclick="goToHome()" class="home-button">
+                <i class="fas fa-home"></i> Back to Home
+            </button>
         </div>
     </div>
 
@@ -513,74 +630,258 @@
         let orderTotal = 0;
 
         // Load cart data when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('DOM loaded, starting cart data load...');
-            loadCartData();
+
+            // Hiển thị loading state
+            showLoading();
+
+            try {
+                // Kiểm tra trạng thái đăng nhập
+                const isLoggedIn = await checkLoginStatus();
+                console.log('User login status:', isLoggedIn);
+
+                if (isLoggedIn) {
+                    // Nếu đã đăng nhập, load từ database
+                    console.log('🔄 Loading cart data from database on page load...');
+                    await loadCartData();
+                    hideGuestNotification();
+                } else {
+                    // Nếu chưa đăng nhập, chỉ load từ sessionStorage và hiển thị thông báo
+                    console.log('👤 User not logged in, loading from sessionStorage only...');
+                    const sessionCartData = loadCartFromSessionStorage();
+                    if (sessionCartData && isValidCartData(sessionCartData)) {
+                        cartData = sessionCartData;
+                        await updateOrderSummary();
+                    } else {
+                        showEmptyCartMessage();
+                    }
+                    showGuestNotification();
+                }
+            } catch (error) {
+                console.error('❌ Error during initialization:', error);
+                // Fallback: thử load từ sessionStorage
+                const sessionCartData = loadCartFromSessionStorage();
+                if (sessionCartData && isValidCartData(sessionCartData)) {
+                    cartData = sessionCartData;
+                    await updateOrderSummary();
+                } else {
+                    showEmptyCartMessage();
+                }
+            } finally {
+                // Ẩn loading state sau khi load xong
+                hideLoading();
+            }
         });
+
+        // Hàm kiểm tra trạng thái đăng nhập
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('http://localhost:8000/api/auth/me/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.id !== null;
+                }
+            } catch (error) {
+                console.error('Error checking login status:', error);
+            }
+            return false;
+        }
+
+        // Hàm load bonus cart data từ sessionStorage
+        function loadBonusCartData() {
+            try {
+                const storedBonusCart = sessionStorage.getItem('bonusCartData');
+                if (storedBonusCart) {
+                    const bonusCartData = JSON.parse(storedBonusCart);
+                    console.log('✅ Bonus cart data loaded from sessionStorage:', bonusCartData);
+                    return bonusCartData;
+                }
+            } catch (error) {
+                console.error('❌ Error loading bonus cart data:', error);
+            }
+            return null;
+        }
+
+        // Hàm load cart data từ sessionStorage (fallback)
+        function loadCartFromSessionStorage() {
+            try {
+                const storedCart = sessionStorage.getItem('cartData');
+                if (storedCart) {
+                    const cartData = JSON.parse(storedCart);
+                    console.log('✅ Cart data loaded from sessionStorage:', cartData);
+                    return cartData;
+                }
+            } catch (error) {
+                console.error('❌ Error loading cart data from sessionStorage:', error);
+            }
+            return null;
+        }
+
+        // Hàm kiểm tra xem cart data có đầy đủ thông tin sản phẩm không
+        function isValidCartData(cartData) {
+            if (!cartData || !cartData.items || cartData.items.length === 0) {
+                console.log('❌ Cart data is empty');
+                return false;
+            }
+
+            for (const item of cartData.items) {
+                if (!item.product) {
+                    console.log('❌ Cart item missing product info:', item);
+                    return false;
+                }
+
+                if (!item.product.name) {
+                    console.log('❌ Cart item missing product name:', item);
+                    return false;
+                }
+
+                if (!item.product.image) {
+                    console.log('❌ Cart item missing product image:', item);
+                    return false;
+                }
+
+                if (!item.quantity || item.quantity <= 0) {
+                    console.log('❌ Cart item has invalid quantity:', item);
+                    return false;
+                }
+
+                if (!item.total_price || parseFloat(item.total_price) <= 0) {
+                    console.log('❌ Cart item has invalid price:', item);
+                    return false;
+                }
+            }
+
+            console.log('✅ Cart data is valid with', cartData.items.length, 'items');
+            return true;
+        }
+
+        // Hàm hiển thị thông báo giỏ hàng trống
+        function showEmptyCartMessage() {
+            console.log('📭 Showing empty cart message...');
+
+            // Set empty cart data
+            cartData = {
+                items: [],
+                total_amount: 0,
+                item_count: 0
+            };
+
+            // Clear cart items display
+            const cartItemsContainer = document.getElementById('cartItems');
+            if (cartItemsContainer) {
+                cartItemsContainer.innerHTML = '<div class="empty-cart-message"><p>Your cart is empty. Please add some products to continue.</p></div>';
+            }
+
+            // Update price display
+            const subtotalElement = document.getElementById('subtotal');
+            const shippingElement = document.getElementById('shipping');
+            const taxElement = document.getElementById('tax');
+            const totalElement = document.getElementById('total');
+
+            if (subtotalElement) subtotalElement.textContent = '$0.00';
+            if (shippingElement) shippingElement.textContent = '$0.00';
+            if (taxElement) taxElement.textContent = '$0.00';
+            if (totalElement) totalElement.textContent = '$0.00';
+
+            console.log('✅ Empty cart message displayed');
+        }
+
+
+
 
         async function loadCartData() {
             try {
-                console.log('Loading cart data...');
-                
-                // Try to get cart data from localStorage or sessionStorage first
-                const storedCart = sessionStorage.getItem('cartData') || localStorage.getItem('cartData');
-                if (storedCart) {
-                    cartData = JSON.parse(storedCart);
-                    console.log('Cart data loaded from storage:', cartData);
-                    updateOrderSummary();
-                } else {
-                    console.log('No stored cart data, trying API...');
-                    // If no stored cart, try to load from API
-                    const response = await fetch('http://localhost:8000/api/cart/', {
-                        credentials: 'include'
-                    });
-                    if (response.ok) {
-                        cartData = await response.json();
-                        console.log('Cart data loaded from API:', cartData);
-                        // Store cart data for this session
+                console.log('🔄 Loading cart data from database...');
+
+                // Thử load từ database trước
+                const response = await fetch('http://localhost:8000/api/cart/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const apiCartData = await response.json();
+                    console.log('✅ Cart data loaded from API:', apiCartData);
+
+                    if (isValidCartData(apiCartData)) {
+                        cartData = apiCartData;
+                        // Lưu vào sessionStorage để đồng bộ với minicart
                         sessionStorage.setItem('cartData', JSON.stringify(cartData));
-                        updateOrderSummary();
+                        await updateOrderSummary();
+                        return; // Thành công, không cần fallback
                     } else {
-                        console.log('API response not ok, showing demo data');
-                        showDemoData();
+                        console.log('⚠️ Cart data from API is invalid, trying fallback...');
+                    }
+                } else {
+                    console.log('⚠️ API response not ok, trying fallback...');
+                }
+            } catch (error) {
+                console.error('⚠️ Error loading cart data from API:', error);
+            }
+
+            // Fallback: Load từ sessionStorage
+            console.log('🔄 Trying to load from sessionStorage fallback...');
+            const fallbackCartData = loadCartFromSessionStorage();
+            if (fallbackCartData && isValidCartData(fallbackCartData)) {
+                console.log('✅ Loaded cart data from sessionStorage fallback');
+                cartData = fallbackCartData;
+                await updateOrderSummary();
+            } else {
+                console.log('❌ No valid cart data found, showing empty cart');
+                showEmptyCartMessage();
+            }
+        }
+
+        // Hàm load bonus cart data từ API với fallback
+        async function loadBonusCartDataFromAPI() {
+            try {
+                console.log('🔄 Loading bonus cart data from database...');
+
+                const response = await fetch('http://localhost:8000/api/bonus-cart/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const apiBonusCartData = await response.json();
+                    console.log('✅ Bonus cart data loaded from API:', apiBonusCartData);
+
+                    // Validate bonus cart data
+                    if (apiBonusCartData && apiBonusCartData.items) {
+                        sessionStorage.setItem('bonusCartData', JSON.stringify(apiBonusCartData));
+                        return apiBonusCartData;
                     }
                 }
             } catch (error) {
-                console.error('Error loading cart data:', error);
-                // Show demo data if API fails
-                showDemoData();
+                console.error('⚠️ Error loading bonus cart data from API:', error);
+            }
+
+            // Fallback to sessionStorage
+            return loadBonusCartData();
+        }
+
+
+        // Functions để hiển thị/ẩn guest notification
+        function showGuestNotification() {
+            const notification = document.getElementById('guestNotification');
+            if (notification) {
+                notification.style.display = 'block';
+                console.log('✅ Guest notification shown');
             }
         }
 
-        function showDemoData() {
-            console.log('Showing demo data...');
-            cartData = {
-                items: [
-                    {
-                        product: {
-                            name: "Magic Nectar™ - Hummingbird Food",
-                            image: "./assets/nectar/nectar_files/The_Best_Hummingbird_Food_On_Earth_1_200x200.jpg"
-                        },
-                        quantity: 1,
-                        total_price: "18.00"
-                    }
-                ],
-                total_amount: 18.00,
-                item_count: 1
-            };
-            console.log('Demo data set:', cartData);
-            updateOrderSummary();
-            
-            // Store demo data in session storage for PayPal integration
-            try {
-                sessionStorage.setItem('cartData', JSON.stringify(cartData));
-                console.log('Demo data stored in session storage');
-            } catch (error) {
-                console.error('Error storing demo data:', error);
+        function hideGuestNotification() {
+            const notification = document.getElementById('guestNotification');
+            if (notification) {
+                notification.style.display = 'none';
+                console.log('✅ Guest notification hidden');
             }
         }
 
-        function updateOrderSummary() {
+
+        async function updateOrderSummary() {
             if (!cartData) {
                 console.log('No cart data available for order summary');
                 return;
@@ -597,34 +898,76 @@
             // Clear existing items
             cartItemsContainer.innerHTML = '';
 
-            // Add cart items
-            cartData.items.forEach(item => {
-                const cartItem = document.createElement('div');
-                cartItem.className = 'cart-item';
-                cartItem.innerHTML = `
-                    <img src="${item.product.image}" alt="${item.product.name}">
-                    <div class="cart-item-details">
-                        <div class="cart-item-name">${item.product.name}</div>
-                        <div class="cart-item-qty">Qty: ${item.quantity}</div>
-                        <div class="cart-item-price">$${item.total_price}</div>
-                    </div>
-                `;
-                cartItemsContainer.appendChild(cartItem);
-            });
+            // Load bonus cart data from API with fallback
+            const bonusCartData = await loadBonusCartDataFromAPI();
 
-            // Calculate prices
-            const subtotal = parseFloat(cartData.total_amount);
+            // Add main cart items
+            if (cartData.items && cartData.items.length > 0) {
+                cartData.items.forEach(item => {
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'cart-item';
+                    cartItem.innerHTML = `
+                        <img src="${item.product.image}" alt="${item.product.name}">
+                        <div class="cart-item-details">
+                            <div class="cart-item-name">${item.product.name}</div>
+                            <div class="cart-item-qty">Qty: ${item.quantity}</div>
+                            <div class="cart-item-price">$${item.total_price}</div>
+                        </div>
+                    `;
+                    cartItemsContainer.appendChild(cartItem);
+                });
+            }
+
+            // Add bonus cart items
+            if (bonusCartData && bonusCartData.items && bonusCartData.items.length > 0) {
+                bonusCartData.items.forEach(item => {
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'cart-item bonus-cart-item';
+                    cartItem.innerHTML = `
+                        <img src="${item.product.image}" alt="${item.product.name}">
+                        <div class="cart-item-details">
+                            <div class="cart-item-name">${item.product.name} (Bonus)</div>
+                            <div class="cart-item-qty">Qty: ${item.quantity}</div>
+                            <div class="cart-item-price">$${item.total_price}</div>
+                        </div>
+                    `;
+                    cartItemsContainer.appendChild(cartItem);
+                });
+            }
+
+            // Calculate prices - include both main and bonus cart totals
+            const mainSubtotal = parseFloat(cartData.total_amount || 0);
+            const bonusSubtotal = bonusCartData ? parseFloat(bonusCartData.total_amount || 0) : 0;
+            const subtotal = mainSubtotal + bonusSubtotal;
             const shipping = 5.99; // Fixed shipping cost
             const tax = subtotal * 0.08; // 8% tax rate
             orderTotal = subtotal + shipping + tax;
 
-            console.log('Price calculation:', { subtotal, shipping, tax, total: orderTotal });
+            console.log('Price calculation:', {
+                mainSubtotal,
+                bonusSubtotal,
+                subtotal,
+                shipping,
+                tax,
+                total: orderTotal
+            });
 
             // Update price display
             subtotalElement.textContent = `$${subtotal.toFixed(2)}`;
             shippingElement.textContent = `$${shipping.toFixed(2)}`;
             taxElement.textContent = `$${tax.toFixed(2)}`;
             totalElement.textContent = `$${orderTotal.toFixed(2)}`;
+
+            // Update bonus products total display
+            const bonusRow = document.getElementById('bonus-row');
+            const bonusTotalElement = document.getElementById('bonus-total');
+            if (bonusSubtotal > 0) {
+                bonusTotalElement.textContent = `$${bonusSubtotal.toFixed(2)}`;
+                bonusRow.style.display = 'flex';
+                console.log('Bonus products total displayed:', bonusSubtotal);
+            } else {
+                bonusRow.style.display = 'none';
+            }
         }
 
         // Form validation function
@@ -744,6 +1087,11 @@
                 console.log('No history, redirecting to index');
                 window.location.href = './index.html';
             }
+        }
+
+        function goToHome() {
+            console.log('Going to home page...');
+            window.location.href = './home.html';
         }
 
         // Auto-fill form with stored data if available
@@ -958,3 +1306,4 @@
     <script src="create-order.js"></script>
 </body>
 </html>
+
