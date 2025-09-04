@@ -10,3 +10,10 @@ body { min-height: 100vh; display: flex; flex-direction: column; }
 [data-include="header"], [data-include="footer"] { flex: 0 0 auto; }
 .auth-container { flex: 1 0 auto; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
 .auth-container main { margin: 0 auto !important; width: 100%; }
+
+/* Override for auth pages to allow wider containers */
+.auth-container .login-container,
+.auth-container .signup-container,
+.auth-container .account-container {
+  max-width: 1000px !important;
+}

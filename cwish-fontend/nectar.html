@@ -898,7 +898,7 @@
 
 
                 <!-- các nút chọn các options -->
-                <div>
+                <div style="margin-top: 20px">
                   <div data-appears-component-name="variations" bis_skin_checked="1">
                     <div data-selector="listing-page-variations" class="appears-ready" bis_skin_checked="1">
                       <div class="wt-validation wt-mb-xs-2" data-selector="listing-page-variation"
@@ -908,11 +908,8 @@
                           <label data-clg-id="WtLabel" for="variation-selector-0" class="wt-label wt-label--small"
                             id="label-variation-selector-0">
                             <span data-label="">
-                              Große
+                              Print Position
                             </span>
-
-
-
                           </label>
 
                         </div>
@@ -921,61 +918,13 @@
                           <select id="variation-selector-0" class="wt-select__element " data-variation-number="0"
                             aria-labelledby="label-variation-selector-0">
                             <option value="" selected="">
-                              Select an option
+                              Choose Print Side
                             </option>
                             <option value="5645474909">
-                              5-6 Jahre Weiß
+                              Front Side
                             </option>
-                            <option value="5645474925">
-                              5-6 Jahre Schwarz
-                            </option>
-                            <option value="5645474929">
-                              7-8 Jahre Weiß
-                            </option>
-                            <option value="5660556532">
-                              7-8 Jahre Schwarz
-                            </option>
-                            <option value="5645474935">
-                              9-10 Jahre Weiß
-                            </option>
-                            <option value="5660556534">
-                              9-10 Jahre Schwarz
-                            </option>
-                            <option value="5645474937">
-                              5-6 J. Sky Blau
-                            </option>
-                            <option value="5660556536">
-                              7-8 J. Sky Blau
-                            </option>
-                            <option value="5660556538">
-                              9-10 J.Sky Blau
-                            </option>
-                            <option value="5660556540">
-                              5-6 J. Pastel Pink
-                            </option>
-                            <option value="5645474941">
-                              7-8 J.Pastel Pink
-                            </option>
-                            <option value="5660556544">
-                              9-10 J.Pastel Pink
-                            </option>
-                            <option value="5645474947">
-                              5-6 J. Royal Blau
-                            </option>
-                            <option value="5660556552">
-                              7-8 J. Royal Blau
-                            </option>
-                            <option value="5645474951">
-                              9-10 J. Royal Blau
-                            </option>
-                            <option value="5660556558">
-                              5-6 J. Weinrot
-                            </option>
-                            <option value="5645474961">
-                              7-8 J. Weinrot
-                            </option>
-                            <option value="5645474965">
-                              9-10 J. Weinrot
+                            <option value="5645474901">
+                              Front Side
                             </option>
                           </select>
                         </div>
@@ -994,7 +943,14 @@
                           </p>
                         </div>
                       </div>
-                      <div class="wt-validation wt-mb-xs-2" data-selector="listing-page-variation"
+
+
+
+
+
+                      <!-- size box (không sử dụng trong shop T-Shirt) -->
+                       
+                      <!-- <div class="wt-validation wt-mb-xs-2" data-selector="listing-page-variation"
                         data-variation-number="1" bis_skin_checked="1">
                         <div class="wt-display-flex-xs wt-justify-content-space-between wt-align-items-baseline"
                           bis_skin_checked="1">
@@ -1038,7 +994,15 @@
                             Please select an option
                           </p>
                         </div>
-                      </div>
+                      </div> -->
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                     </div>
                   </div>
                   <div class="wt-validation wt-mb-xs-2" data-selector="listing-page-personalization"
@@ -1701,14 +1665,14 @@
 
   <script>
     // Toggle functionality for personalization content
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const toggleButton = document.querySelector('[data-wt-content-toggle="true"]');
       const contentDiv = document.getElementById('enhanced-perso-content');
       const addIcon = document.querySelector('[data="button-icon-add"]');
       const minusIcon = document.querySelector('[data="button-icon-minus"]');
 
       if (toggleButton && contentDiv) {
-        toggleButton.addEventListener('click', function(e) {
+        toggleButton.addEventListener('click', function (e) {
           e.preventDefault();
 
           // Toggle aria-expanded on button
