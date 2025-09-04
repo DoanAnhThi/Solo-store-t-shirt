@@ -443,6 +443,9 @@
     href="https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1/assets/ShopPayVerificationSwitch.DW7NMDXG.css"
     crossorigin="">
   <link rel="stylesheet" href="./assets/local-fixes.css">
+
+
+  <link rel="stylesheet" href="./nectar.css" type="text/css">
 </head>
 
 <body id="magic-nectar™-hummingbird-food-100-natural-amp-organic" class="template-product"
@@ -893,74 +896,263 @@
 
                 </select>
 
-                <!-- Nút chọn giới tính -->
-                <div class="gender-selection" style="margin-bottom: 20px; margin-top: 30px;">
-                  <label class="selection-label" style="display: block; margin-bottom: 10px; font-weight: bold;">Chọn
-                    giới tính:</label>
-                  <div class="gender-buttons" style="display: flex; gap: 10px;">
-                    <button type="button" class="gender-btn btn" data-gender="male"
-                      style="padding: 10px 20px; border: 2px solid #007bff; background: #007bff; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; transition: all 0.3s ease;">
-                      <span>Nam</span>
-                    </button>
-                    <button type="button" class="gender-btn btn" data-gender="female"
-                      style="padding: 10px 20px; border: 2px solid #007bff; background: #007bff; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; transition: all 0.3s ease;">
-                      <span>Nữ</span>
-                    </button>
-                  </div>
-                </div>
 
-                <!-- Nút chọn size -->
-                <div class="size-selection" style="margin-bottom: 20px; margin-top: 30px;">
-                  <label class="selection-label" style="display: block; margin-bottom: 10px; font-weight: bold;">Chọn
-                    size:</label>
-                  <div class="size-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" class="size-btn btn" data-size="S"
-                      style="padding: 10px 15px; border: 2px solid #28a745; background: #28a745; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; transition: all 0.3s ease;">
-                      <span>S</span>
-                    </button>
-                    <button type="button" class="size-btn btn" data-size="M"
-                      style="padding: 10px 15px; border: 2px solid #28a745; background: #28a745; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; transition: all 0.3s ease;">
-                      <span>M</span>
-                    </button>
-                    <button type="button" class="size-btn btn" data-size="L"
-                      style="padding: 10px 15px; border: 2px solid #28a745; background: #28a745; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; transition: all 0.3s ease;">
-                      <span>L</span>
-                    </button>
-                    <button type="button" class="size-btn btn" data-size="XL"
-                      style="padding: 10px 15px; border: 2px solid #28a745; background: #28a745; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; transition: all 0.3s ease;">
-                      <span>XL</span>
-                    </button>
-                    <button type="button" class="size-btn btn" data-size="XXL"
-                      style="padding: 10px 15px; border: 2px solid #28a745; background: #28a745; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; transition: all 0.3s ease;">
-                      <span>XXL</span>
-                    </button>
-                  </div>
-                </div>
+                <!-- các nút chọn các options -->
+                <div>
+                  <div data-appears-component-name="variations" bis_skin_checked="1">
+                    <div data-selector="listing-page-variations" class="appears-ready" bis_skin_checked="1">
+                      <div class="wt-validation wt-mb-xs-2" data-selector="listing-page-variation"
+                        data-variation-number="0" bis_skin_checked="1">
+                        <div class="wt-display-flex-xs wt-justify-content-space-between wt-align-items-baseline"
+                          bis_skin_checked="1">
+                          <label data-clg-id="WtLabel" for="variation-selector-0" class="wt-label wt-label--small"
+                            id="label-variation-selector-0">
+                            <span data-label="">
+                              Große
+                            </span>
 
-                <!-- Nút chọn vào sẽ thả xuống dropdown, với một ô để nhập vào -->
-                <div class="custom-dropdown" style="margin-bottom: 20px; margin-top: 30px;">
-                  <label class="selection-label" style="display: block; margin-bottom: 10px; font-weight: bold;">Tùy
-                    chọn khác:</label>
-                  <div class="dropdown-container" style="position: relative;">
-                    <button type="button" class="dropdown-toggle btn"
-                      style="padding: 10px 20px; border: 2px solid #6f42c1; background: #6f42c1; color: white; cursor: pointer; width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; border-radius: 5px; font-weight: bold; transition: all 0.3s ease;">
-                      <span class="dropdown-text">Chọn tùy chọn</span>
-                      <span class="dropdown-arrow" style="transform: rotate(0deg); transition: transform 0.3s;">▼</span>
-                    </button>
-                    <div class="dropdown-menu"
-                      style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #ddd; border-top: none; display: none; z-index: 1000;">
-                      <div class="dropdown-input" style="padding: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-size: 14px;">Nhập tùy chọn của
-                          bạn:</label>
-                        <input type="text" class="custom-input" placeholder="Nhập tại đây..."
-                          style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        <button type="button" class="apply-btn btn"
-                          style="margin-top: 10px; padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Áp
-                          dụng</button>
+
+
+                          </label>
+
+                        </div>
+
+                        <div class="wt-select" bis_skin_checked="1">
+                          <select id="variation-selector-0" class="wt-select__element " data-variation-number="0"
+                            aria-labelledby="label-variation-selector-0">
+                            <option value="" selected="">
+                              Select an option
+                            </option>
+                            <option value="5645474909">
+                              5-6 Jahre Weiß
+                            </option>
+                            <option value="5645474925">
+                              5-6 Jahre Schwarz
+                            </option>
+                            <option value="5645474929">
+                              7-8 Jahre Weiß
+                            </option>
+                            <option value="5660556532">
+                              7-8 Jahre Schwarz
+                            </option>
+                            <option value="5645474935">
+                              9-10 Jahre Weiß
+                            </option>
+                            <option value="5660556534">
+                              9-10 Jahre Schwarz
+                            </option>
+                            <option value="5645474937">
+                              5-6 J. Sky Blau
+                            </option>
+                            <option value="5660556536">
+                              7-8 J. Sky Blau
+                            </option>
+                            <option value="5660556538">
+                              9-10 J.Sky Blau
+                            </option>
+                            <option value="5660556540">
+                              5-6 J. Pastel Pink
+                            </option>
+                            <option value="5645474941">
+                              7-8 J.Pastel Pink
+                            </option>
+                            <option value="5660556544">
+                              9-10 J.Pastel Pink
+                            </option>
+                            <option value="5645474947">
+                              5-6 J. Royal Blau
+                            </option>
+                            <option value="5660556552">
+                              7-8 J. Royal Blau
+                            </option>
+                            <option value="5645474951">
+                              9-10 J. Royal Blau
+                            </option>
+                            <option value="5660556558">
+                              5-6 J. Weinrot
+                            </option>
+                            <option value="5645474961">
+                              7-8 J. Weinrot
+                            </option>
+                            <option value="5645474965">
+                              9-10 J. Weinrot
+                            </option>
+                          </select>
+                        </div>
+                        <div id="error-variation-selector-0"
+                          class="wt-validation__message wt-validation__message--is-hidden" bis_skin_checked="1">
+                          <span
+                            class="wt-icon wt-icon--smaller-xs wt-circle wt-sem-text-on-surface-dark wt-bg-brick-dark wt-mr-xs-1"><svg
+                              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
+                              focusable="false">
+                              <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M11 6v8h2V6zm1 9.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5">
+                              </path>
+                            </svg></span>
+                          <p class="wt-text-body-small wt-display-inline">
+                            Please select an option
+                          </p>
+                        </div>
+                      </div>
+                      <div class="wt-validation wt-mb-xs-2" data-selector="listing-page-variation"
+                        data-variation-number="1" bis_skin_checked="1">
+                        <div class="wt-display-flex-xs wt-justify-content-space-between wt-align-items-baseline"
+                          bis_skin_checked="1">
+                          <label data-clg-id="WtLabel" for="variation-selector-1" class="wt-label wt-label--small"
+                            id="label-variation-selector-1">
+                            <span data-label="">
+                              Druckfarbe
+                            </span>
+
+
+
+                          </label>
+
+                        </div>
+
+                        <div class="wt-select" bis_skin_checked="1">
+                          <select id="variation-selector-1" class="wt-select__element " data-variation-number="1"
+                            aria-labelledby="label-variation-selector-1">
+                            <option value="">
+                              Select an option
+                            </option>
+                            <option value="5645474913">
+                              Schwarz
+                            </option>
+                            <option value="5645474919" selected="">
+                              Weiß
+                            </option>
+                          </select>
+                        </div>
+                        <div id="error-variation-selector-1"
+                          class="wt-validation__message wt-validation__message--is-hidden" bis_skin_checked="1">
+                          <span
+                            class="wt-icon wt-icon--smaller-xs wt-circle wt-sem-text-on-surface-dark wt-bg-brick-dark wt-mr-xs-1"><svg
+                              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
+                              focusable="false">
+                              <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M11 6v8h2V6zm1 9.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5">
+                              </path>
+                            </svg></span>
+                          <p class="wt-text-body-small wt-display-inline">
+                            Please select an option
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
+                  <div class="wt-validation wt-mb-xs-2" data-selector="listing-page-personalization"
+                    data-personalization-required="" bis_skin_checked="1">
+                    <div class="wt-content-toggle" bis_skin_checked="1">
+                      <button data-clg-id="WtButton"
+                        class="wt-btn wt-btn--transparent wt-btn--small wt-content-toggle--btn wt-content-toggle--with-icon wt-width-full wt-content-toggle--flush"
+                        data-selector="enhanced-perso-content-toggle" data-wt-content-toggle="true" data-animate="true"
+                        aria-controls="enhanced-perso-content" aria-expanded="false">
+                        <span class="wt-icon wt-icon--smaller-xs wt-display-none" data="button-icon-add"><svg
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path
+                              d="M20,11H13V4a1,1,0,0,0-2,0v7H4a1,1,0,0,0,0,2h7v7a1,1,0,0,0,2,0V13h7A1,1,0,0,0,20,11Z">
+                            </path>
+                          </svg></span>
+                        <span class="wt-icon wt-icon--smaller-xs" data="button-icon-minus"><svg
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M20 13H4c-.553 0-1-.447-1-1s.447-1 1-1h16c.553 0 1 .447 1 1s-.447 1-1 1z">
+                            </path>
+                          </svg></span>
+                        <span class="wt-ml-xs-1 wt-width-full wt-text-title-small">
+                          Add personalization
+                        </span>
+
+                      </button>
+
+                      <div id="enhanced-perso-content" class="wt-content-toggle__body" aria-hidden="true"
+                        bis_skin_checked="1" style="">
+                        <div data-appears-component-name="personalization"
+                          data-appears-event-data="{&quot;listing_id&quot;:4326983860,&quot;personalization_field_count&quot;:1}"
+                          bis_skin_checked="1">
+                          <ul data-clg-id="WtList"
+                            class="wt-list wt-list-unstyled wt-validation wt-text-body appears-ready" role="list">
+                            <li id="perso-field-1389779696558" data-field-id="1389779696558" data-is-required="true"
+                              class="wt-mt-xs-2">
+                              <div class="wt-display-flex-xs wt-justify-content-space-between" bis_skin_checked="1">
+                                <label for="perso-input-1389779696558" class="wt-label wt-label--small"
+                                  data-label-container="" data-label-translation="Personalization"
+                                  data-label-original="Personalisierung">
+                                  <span data-label="">
+                                    Personalization
+                                  </span>
+                                </label>
+                                <span class="wt-tooltip wt-ml-xs-1 wt-tooltip--top-left"
+                                  id="perso-1389779696558-translate-tooltip" data-wt-tooltip-neu-position-direction=""
+                                  data-selector="listing-page-personalization-translation-toggle"
+                                  style="margin-bottom: -12px; margin-top: -12px;">
+                                  <button data-clg-id="WtButton"
+                                    class="wt-btn wt-btn--transparent wt-btn--icon wt-btn--transparent-flush-right wt-btn--small wt-tooltip__trigger">
+                                    <span class="wt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                        aria-hidden="true" focusable="false">
+                                        <path
+                                          d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2m-1.486 15h.5a1 1 0 0 0 1 1v2H12A7.993 7.993 0 0 1 7 5.766V8a1 1 0 0 0 1 1 1.01 1.01 0 0 0 1.014-1V4.6a7.89 7.89 0 0 1 8.26 1.4H15.5a1 1 0 0 0-1 1h-1.719a1 1 0 0 0-1 1c0 .015.008.027.009.042A.985.985 0 0 0 11 9h-1a1 1 0 0 0 0 2h3a1 1 0 0 0 1 1h-3.986a2.5 2.5 0 0 0-2 2.45 2.544 2.544 0 0 0 2.5 2.55m5.5 1.909V14.45a2.5 2.5 0 0 0-2-2.45H16v1a1 1 0 0 0 1 1h2.737a8.02 8.02 0 0 1-3.723 4.909">
+                                        </path>
+                                      </svg></span>
+
+                                  </button>
+
+                                  <span id="perso-1389779696558-translate-tooltip--icon" role="tooltip"
+                                    class="wt-bg-white wt-sem-text-primary">
+                                    <div data-show-original="" bis_skin_checked="1">
+                                      See in original language
+                                    </div>
+                                    <div data-show-translation="" class="wt-display-none" bis_skin_checked="1">
+                                      Translate to English
+                                    </div>
+                                  </span>
+                                </span>
+                              </div>
+                              <div data-instructions-container=""
+                                class="wt-text-caption wt-sem-text-secondary wt-mb-xs-1" bis_skin_checked="1">
+                                <p data-instructions-translation="">
+                                  Please enter your desired name here
+                                  🥰🥰🥰
+                                </p>
+                                <p data-instructions-original="" class="wt-display-none">
+                                  Bitte gib hier deinen Wunschnamen 🥰🥰🥰
+                                </p>
+                              </div>
+                              <textarea id="perso-input-1389779696558" class="wt-input perso-text-area"
+                                style="height: 70px;"></textarea>
+                              <div
+                                class="wt-display-flex-xs wt-flex-direction-row-xs wt-flex-gap-xs-1 wt-justify-content-space-between wt-align-items-baseline"
+                                bis_skin_checked="1">
+                                <div class="wt-validation__message wt-display-flex-xs wt-align-items-center"
+                                  role="alert" bis_skin_checked="1">
+                                  <div class="wt-mr-xs-1" bis_skin_checked="1">
+                                    <span
+                                      class="wt-icon wt-icon--smaller-xs wt-circle wt-sem-text-on-surface-dark wt-bg-brick-dark wt-display-none"
+                                      data-selector="personalization-error-icon"><svg xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                          d="M11 6v8h2V6zm1 9.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5">
+                                        </path>
+                                      </svg></span>
+                                  </div>
+                                  <div class="wt-text-body-small" data-selector="personalization-error"
+                                    data-character-limit-error="You’ve reached the limit!"
+                                    data-empty-error="This field is required" bis_skin_checked="1">
+                                  </div>
+                                </div>
+                                <div data-selector="listing-page-personalization-character-remaining"
+                                  class="wt-text-caption wt-text-right-xs wt-mt-xs-1" data-max-char-count="256"
+                                  bis_skin_checked="1">0/256</div>
+                              </div>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
+
 
 
                 <div class="product-form__submit" bis_skin_checked="1">
@@ -1507,62 +1699,41 @@
   <script src="./test-nectar.js"></script>
   <script src="./cart-manager.js"></script>
 
-  <style>
-    /* Hover effects cho các nút */
-    .gender-btn:hover,
-    .size-btn:hover,
-    .dropdown-toggle:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+  <script>
+    // Toggle functionality for personalization content
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleButton = document.querySelector('[data-wt-content-toggle="true"]');
+      const contentDiv = document.getElementById('enhanced-perso-content');
+      const addIcon = document.querySelector('[data="button-icon-add"]');
+      const minusIcon = document.querySelector('[data="button-icon-minus"]');
 
-    .gender-btn:active,
-    .size-btn:active,
-    .dropdown-toggle:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+      if (toggleButton && contentDiv) {
+        toggleButton.addEventListener('click', function(e) {
+          e.preventDefault();
 
-    .apply-btn:hover {
-      background-color: #c82333 !important;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+          // Toggle aria-expanded on button
+          const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+          toggleButton.setAttribute('aria-expanded', !isExpanded);
 
-    .apply-btn:active {
-      background-color: #bd2130 !important;
-      transform: translateY(0);
-    }
+          // Toggle aria-hidden on content
+          contentDiv.setAttribute('aria-hidden', isExpanded);
 
-    /* Active state cho các nút đã chọn */
-    .gender-btn.active,
-    .size-btn.active {
-      box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.8);
-      transform: scale(0.95);
-    }
-
-    /* Dropdown animation */
-    .dropdown-menu {
-      animation: slideDown 0.3s ease-out;
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
+          // Toggle icon visibility
+          if (addIcon && minusIcon) {
+            if (isExpanded) {
+              addIcon.classList.remove('wt-display-none');
+              minusIcon.classList.add('wt-display-none');
+            } else {
+              addIcon.classList.add('wt-display-none');
+              minusIcon.classList.remove('wt-display-none');
+            }
+          }
+        });
       }
+    });
+  </script>
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
 
-    /* Rotate arrow when dropdown is open */
-    .dropdown-toggle.open .dropdown-arrow {
-      transform: rotate(180deg);
-    }
-  </style>
 </body>
 
 </html>
