@@ -630,20 +630,38 @@ document.addEventListener('DOMContentLoaded', function() {
         addToCartBtn.addEventListener('click', async function(e) {
             e.preventDefault();
             console.log('Add to Cart button clicked!');
-            
+
             try {
-                // Logic giống như nút + trong minicart
-                if (window.cartManager.cartData && window.cartManager.cartData.items && window.cartManager.cartData.items.length > 0) {
-                    console.log('Cart has items, incrementing quantity...');
-                    // Nếu giỏ hàng đã có sản phẩm, tăng số lượng lên 1 (giống nút +)
-                    await window.cartManager.incrementQuantity();
+                // Kiểm tra radio button quantity nào được chọn
+                const selectedQuantity = document.querySelector('input[name="quantity"]:checked');
+                console.log('Selected quantity radio:', selectedQuantity);
+
+                if (selectedQuantity) {
+                    const quantityValue = selectedQuantity.value;
+                    console.log('Selected quantity value:', quantityValue);
+
+                    // Xác định hành động dựa trên quantity được chọn
+                    if (selectedQuantity.id === 'quantity1') {
+                        // Quantity 1: Thêm 1 single product
+                        console.log('Adding 1 single product to cart');
+                        await window.cartManager.addToCart(1);
+                    } else if (selectedQuantity.id === 'quantity2') {
+                        // Quantity 2: Thêm 2 single products
+                        console.log('Adding 2 single products to cart');
+                        await window.cartManager.addToCart(2);
+                    } else if (selectedQuantity.id === 'quantity3') {
+                        // Quantity 3: Thêm 1 digital product (bonus product)
+                        console.log('Adding 1 digital product to cart');
+                        await window.cartManager.addBonusToCart(1);
+                    } else {
+                        // Fallback: thêm 1 single product
+                        console.log('Unknown quantity selection, adding 1 single product as fallback');
+                        await window.cartManager.addToCart(1);
+                    }
                 } else {
-                    console.log('Cart is empty, adding new product...');
-                    // Nếu giỏ hàng trống, thêm sản phẩm mới
-                    const quantityInput = document.querySelector('.product__quantity');
-                    const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
-                    console.log('Adding to cart with quantity:', quantity);
-                    await window.cartManager.addToCart(quantity);
+                    // Không có radio nào được chọn, fallback
+                    console.log('No quantity selected, adding 1 single product as fallback');
+                    await window.cartManager.addToCart(1);
                 }
             } catch (error) {
                 console.error('Error in Add to Cart click handler:', error);
