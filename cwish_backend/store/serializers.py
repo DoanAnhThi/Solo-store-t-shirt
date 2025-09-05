@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SingleProduct, UserCart, Order, Contact, DigitalBonusProduct, BonusCart
+from .models import SingleProduct, UserCart, Order, Contact, DigitalBonusProduct, BonusCart, OrderItem
 
 
 class SingleProductSerializer(serializers.ModelSerializer):
@@ -48,18 +48,56 @@ class UpdateBonusCartQuantitySerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=0)  # Cho phép 0 để xóa sản phẩm
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    main_product = SingleProductSerializer(read_only=True)
+class OrderItemSerializer(serializers.ModelSerializer):
+    single_product = SingleProductSerializer(read_only=True)
     bonus_product = DigitalBonusProductSerializer(read_only=True)
-    
+    product_name = serializers.SerializerMethodField()
+    product_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItem
+        fields = [
+            'id', 'product_type', 'single_product', 'bonus_product',
+            'quantity', 'unit_price', 'total_price', 'product_name', 'product_image'
+        ]
+
+    def get_product_name(self, obj):
+        return obj.get_product_name()
+
+    def get_product_image(self, obj):
+        image = obj.get_product_image()
+        if image:
+            # Trả về URL tuyệt đối cho email
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(image.url)
+            else:
+                # Fallback nếu không có request context
+                from django.conf import settings
+                return f"{settings.SITE_URL}{image.url}"
+        return None
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    order_items = OrderItemSerializer(many=True, read_only=True)
+    quantity = serializers.ReadOnlyField()
+    main_products = serializers.SerializerMethodField()
+    bonus_products = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
         fields = [
-            'id', 'user', 'main_product', 'bonus_product', 'quantity', 'unit_price', 'total_amount', 'currency',
-            'email', 'first_name', 'last_name', 'address', 'city', 'country', 'postal_code', 
-            'phone', 'status', 'created_at', 'updated_at'
+            'id', 'user', 'order_items', 'quantity', 'total_amount', 'currency',
+            'email', 'first_name', 'last_name', 'address', 'city', 'country', 'postal_code',
+            'phone', 'status', 'main_products', 'bonus_products', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'user', 'unit_price', 'total_amount', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+
+    def get_main_products(self, obj):
+        return OrderItemSerializer(obj.get_main_products(), many=True).data
+
+    def get_bonus_products(self, obj):
+        return OrderItemSerializer(obj.get_bonus_products(), many=True).data
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
@@ -69,15 +107,15 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             'email', 'first_name', 'last_name', 'address',
             'city', 'country', 'postal_code', 'phone'
         ]
-    
+
     def create(self, validated_data):
         user = self.context['request'].user
-        
+
         # Lấy sản phẩm chính từ giỏ hàng
         main_cart_items = UserCart.objects.filter(user=user)
         bonus_cart_items = BonusCart.objects.filter(user=user)
-        
-        # Nếu giỏ hàng trống, cho phép tạo đơn trực tiếp từ payload (fallback cho frontend hiện tại)
+
+        # Nếu giỏ hàng trống, tạo đơn với sản phẩm mặc định (fallback cho frontend hiện tại)
         if not main_cart_items.exists() and not bonus_cart_items.exists():
             request = self.context.get('request')
             payload_items = []
@@ -101,47 +139,69 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             if quantity <= 0:
                 quantity = 1
 
+            # Tạo đơn hàng
             order = Order.objects.create(
                 user=user,
-                main_product=main_product,
+                total_amount=quantity * main_product.price,
+                currency='USD',
+                **validated_data
+            )
+
+            # Tạo OrderItem cho sản phẩm chính
+            OrderItem.objects.create(
+                order=order,
+                product_type='single',
+                single_product=main_product,
                 quantity=quantity,
                 unit_price=main_product.price,
-                total_amount=quantity * main_product.price,
-                **validated_data
+                total_price=quantity * main_product.price
             )
+
             return order
-        
-        orders = []
-        
-        # Tạo đơn hàng cho sản phẩm chính
+
+        # Tạo đơn hàng mới với nhiều items
+        order = Order.objects.create(
+            user=user,
+            total_amount=0,  # Sẽ được cập nhật sau
+            currency='USD',
+            **validated_data
+        )
+
+        total_amount = 0
+
+        # Thêm main cart items vào order
         for cart_item in main_cart_items:
-            order = Order.objects.create(
-                user=user,
-                main_product=cart_item.product,
+            OrderItem.objects.create(
+                order=order,
+                product_type='single',
+                single_product=cart_item.product,
                 quantity=cart_item.quantity,
                 unit_price=cart_item.product.price,
-                total_amount=cart_item.total_price,
-                **validated_data
+                total_price=cart_item.total_price
             )
-            orders.append(order)
-        
-        # Tạo đơn hàng cho sản phẩm bonus
+            total_amount += cart_item.total_price
+
+        # Thêm bonus cart items vào order
         for cart_item in bonus_cart_items:
-            order = Order.objects.create(
-                user=user,
+            OrderItem.objects.create(
+                order=order,
+                product_type='bonus',
                 bonus_product=cart_item.product,
                 quantity=cart_item.quantity,
                 unit_price=cart_item.product.price,
-                total_amount=cart_item.total_price,
-                **validated_data
+                total_price=cart_item.total_price
             )
-            orders.append(order)
-        
+            total_amount += cart_item.total_price
+
+        # Cập nhật tổng tiền cho order
+        order.total_amount = total_amount
+        order.save()
+
         # Xóa giỏ hàng sau khi đặt hàng
         main_cart_items.delete()
         bonus_cart_items.delete()
-        
-        return orders[0] if len(orders) == 1 else orders
+
+        return order
 
 
 class ContactSerializer(serializers.ModelSerializer):

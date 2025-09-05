@@ -13,7 +13,8 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
-from .models import SingleProduct, UserCart, Order, Contact, DigitalBonusProduct, BonusCart
+from django.templatetags.static import static
+from .models import SingleProduct, UserCart, Order, Contact, DigitalBonusProduct, BonusCart, OrderItem
 from .serializers import (
     SingleProductSerializer, UserCartSerializer, OrderSerializer,
     OrderCreateSerializer, AddToCartSerializer, UpdateCartQuantitySerializer,
@@ -399,9 +400,19 @@ class OrderViewSet(viewsets.ModelViewSet):
         try:
             print(f"📧 Gửi email xác nhận đơn hàng cho {order.email}...")
 
+            # Load order items để đảm bảo chúng được fetch từ database
+            order_items = order.order_items.select_related('single_product', 'bonus_product').all()
+
+            # Serialize order items với request context để có URL tuyệt đối
+            from .serializers import OrderItemSerializer
+            serializer = OrderItemSerializer(order_items, many=True, context={'request': None})
+            serialized_items = serializer.data
+
             # Render email template
             html_content = render_to_string('emails/order_confirmation.html', {
                 'order': order,
+                'order_items': serialized_items,
+                'site_url': settings.SITE_URL,
             })
 
             # Tạo subject email

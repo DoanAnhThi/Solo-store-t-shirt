@@ -85,6 +85,71 @@ class BonusCart(models.Model):
         return self.quantity * self.product.price
 
 
+class OrderItem(models.Model):
+    """Chi tiết sản phẩm trong đơn hàng - hỗ trợ multiple products"""
+    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='order_items')
+
+    # Có thể là SingleProduct hoặc DigitalBonusProduct
+    product_type = models.CharField(max_length=20, choices=[
+        ('single', 'Single Product'),
+        ('bonus', 'Bonus Product')
+    ])
+
+    # Foreign keys đến các loại sản phẩm (chỉ một trong hai sẽ được set)
+    single_product = models.ForeignKey(SingleProduct, on_delete=models.CASCADE, null=True, blank=True)
+    bonus_product = models.ForeignKey(DigitalBonusProduct, on_delete=models.CASCADE, null=True, blank=True)
+
+    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Order Item"
+        verbose_name_plural = "Order Items"
+
+    def __str__(self):
+        product_name = self.get_product_name()
+        return f"{product_name} x {self.quantity}"
+
+    @property
+    def product(self):
+        """Trả về sản phẩm tương ứng"""
+        return self.single_product or self.bonus_product
+
+    def get_product_name(self):
+        """Trả về tên sản phẩm"""
+        if self.single_product:
+            return self.single_product.name
+        elif self.bonus_product:
+            return self.bonus_product.name
+        return "Unknown Product"
+
+    def get_product_image(self):
+        """Trả về ảnh sản phẩm"""
+        if self.single_product and self.single_product.image:
+            return self.single_product.image
+        elif self.bonus_product and self.bonus_product.image:
+            return self.bonus_product.image
+        return None
+
+    def save(self, *args, **kwargs):
+        if not self.total_price and self.unit_price is not None:
+            self.total_price = self.quantity * self.unit_price
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        """Validation để đảm bảo chỉ có một loại sản phẩm được chọn"""
+        from django.core.exceptions import ValidationError
+
+        if not self.single_product and not self.bonus_product:
+            raise ValidationError('Either single_product or bonus_product must be specified')
+
+        if self.single_product and self.bonus_product:
+            raise ValidationError('Cannot have both single_product and bonus_product')
+
+
 class Order(models.Model):
     """Đơn hàng"""
     STATUS_CHOICES = [
@@ -97,16 +162,11 @@ class Order(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
-    
-    # Sản phẩm có thể là SingleProduct hoặc DigitalBonusProduct
-    main_product = models.ForeignKey(SingleProduct, on_delete=models.CASCADE, null=True, blank=True)
-    bonus_product = models.ForeignKey(DigitalBonusProduct, on_delete=models.CASCADE, null=True, blank=True)
-    
-    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+
+    # Thông tin tổng quan đơn hàng
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     currency = models.CharField(max_length=3, default='USD')
-    
+
     # Thông tin giao hàng
     email = models.EmailField()
     first_name = models.CharField(max_length=100)
@@ -116,7 +176,7 @@ class Order(models.Model):
     country = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
     phone = models.CharField(max_length=20, blank=True)
-    
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     # Thông tin Shirtigo
@@ -130,28 +190,33 @@ class Order(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        product_name = self.main_product.name if self.main_product else self.bonus_product.name
-        return f"Order {self.id} - {self.user.username} - {product_name}"
+        return f"Order {self.id} - {self.user.username} - {self.get_total_quantity()} items"
 
     @property
-    def product(self):
-        """Trả về sản phẩm tương ứng"""
-        return self.main_product or self.bonus_product
+    def quantity(self):
+        """Tính tổng quantity của tất cả items"""
+        return sum(item.quantity for item in self.order_items.all())
 
-    def save(self, *args, **kwargs):
-        if not self.total_amount and self.unit_price is not None:
-            self.total_amount = self.quantity * self.unit_price
-        super().save(*args, **kwargs)
+    def get_total_quantity(self):
+        """Trả về tổng số lượng sản phẩm"""
+        return self.quantity
 
-    def clean(self):
-        """Validation để đảm bảo chỉ có một loại sản phẩm được chọn"""
-        from django.core.exceptions import ValidationError
-        
-        if not self.main_product and not self.bonus_product:
-            raise ValidationError('Either main_product or bonus_product must be specified')
-        
-        if self.main_product and self.bonus_product:
-            raise ValidationError('Cannot have both main_product and bonus_product')
+    def calculate_total_amount(self):
+        """Tính lại tổng tiền từ các order items"""
+        return sum(item.total_price for item in self.order_items.all())
+
+    def update_total_amount(self):
+        """Cập nhật total_amount từ các order items"""
+        self.total_amount = self.calculate_total_amount()
+        self.save(update_fields=['total_amount'])
+
+    def get_main_products(self):
+        """Trả về danh sách main products"""
+        return self.order_items.filter(product_type='single')
+
+    def get_bonus_products(self):
+        """Trả về danh sách bonus products"""
+        return self.order_items.filter(product_type='bonus')
 
 
 class Contact(models.Model):
