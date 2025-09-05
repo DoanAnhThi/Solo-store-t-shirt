@@ -26,7 +26,7 @@ class PayPalIntegration {
 
         // Load PayPal SDK
         const script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${this.paypalClientId}&currency=USD&intent=capture`;
+        script.src = `https://www.paypal.com/sdk/js?client-id=${this.paypalClientId}&currency=EUR&intent=capture`;
         script.onload = () => {
             this.setupPayPal();
         };
@@ -135,7 +135,7 @@ class PayPalIntegration {
                     name: item.product.name,
                     quantity: item.quantity.toString(),
                     unit_amount: {
-                        currency_code: 'USD',
+                        currency_code: 'EUR',
                         value: (parseFloat(item.total_price) / item.quantity).toFixed(2)
                     }
                 }));
@@ -148,7 +148,7 @@ class PayPalIntegration {
                     name: `${item.product.name} (Bonus)`,
                     quantity: item.quantity.toString(),
                     unit_amount: {
-                        currency_code: 'USD',
+                        currency_code: 'EUR',
                         value: (parseFloat(item.total_price) / item.quantity).toFixed(2)
                     }
                 }));
@@ -171,19 +171,19 @@ class PayPalIntegration {
             const order = await actions.order.create({
                 purchase_units: [{
                     amount: {
-                        currency_code: 'USD',
+                        currency_code: 'EUR',
                         value: total.toFixed(2),
                         breakdown: {
                             item_total: {
-                                currency_code: 'USD',
+                                currency_code: 'EUR',
                                 value: subtotal.toFixed(2)
                             },
                             shipping: {
-                                currency_code: 'USD',
+                                currency_code: 'EUR',
                                 value: shipping.toFixed(2)
                             },
                             tax_total: {
-                                currency_code: 'USD',
+                                currency_code: 'EUR',
                                 value: tax.toFixed(2)
                             }
                         }

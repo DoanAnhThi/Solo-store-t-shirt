@@ -272,7 +272,7 @@ class CartManager {
         // Cập nhật giá trong mini-cart
         const cartPrice = document.querySelector('.cart__item__price');
         if (cartPrice) {
-            cartPrice.textContent = `$${(this.cartData.total_amount || 0).toFixed(2)}`;
+            cartPrice.textContent = `€${(this.cartData.total_amount || 0).toFixed(2)}`;
             console.log('Updated cart price display:', this.cartData.total_amount);
         }
 
@@ -502,7 +502,7 @@ class CartManager {
 
                 const priceElement = cartItem.querySelector('.cart__item__price');
                 if (priceElement) {
-                    priceElement.textContent = `$${item.total_price}`;
+                    priceElement.textContent = `€${item.total_price}`;
                 }
 
                 // Thêm event listeners cho nút + và -
@@ -555,7 +555,7 @@ class CartManager {
 
                 const priceElement = cartItem.querySelector('.cart__item__price');
                 if (priceElement) {
-                    priceElement.textContent = `$${item.total_price}`;
+                    priceElement.textContent = `€${item.total_price}`;
                 }
 
                 // Thêm event listeners cho nút + và - của bonus product
@@ -589,7 +589,7 @@ class CartManager {
             const mainTotal = this.cartData?.total_amount || 0;
             const bonusTotal = this.bonusCartData?.total_amount || 0;
             const totalAmount = mainTotal + bonusTotal;
-            subtotalElement.textContent = `$${totalAmount.toFixed(2)}`;
+            subtotalElement.textContent = `€${totalAmount.toFixed(2)}`;
         }
     }
 

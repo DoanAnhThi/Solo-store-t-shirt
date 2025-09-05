@@ -169,10 +169,10 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="flex: 1;">
                         <span style="font-weight: bold; margin-right: 15px;">Qty: {{ item.quantity }}</span>
-                        <span style="color: #6c757d;">@ ${{ item.unit_price }}</span>
+                        <span style="color: #6c757d;">@ €{{ item.unit_price }}</span>
                     </div>
                     <div style="font-weight: bold; color: #28a745;">
-                        ${{ item.total_price }}
+                        €{{ item.total_price }}
                     </div>
                 </div>
             </div>
@@ -182,7 +182,7 @@
             <div style="border-top: 2px solid #007bff; padding-top: 15px; margin-top: 15px;">
                 <div class="order-info total">
                     <span><strong>Order Total:</strong></span>
-                    <span>${{ order.total_amount }} {{ order.currency }}</span>
+                    <span>€{{ order.total_amount }} {{ order.currency }}</span>
                 </div>
             </div>
         </div>
