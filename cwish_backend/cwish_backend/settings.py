@@ -59,7 +59,7 @@ ROOT_URLCONF = 'cwish_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -211,5 +211,4 @@ EMAIL_HOST_USER = 'thi.doan28499@gmail.com'
 EMAIL_HOST_PASSWORD = 'wyfultbqmpflhrkl'
 DEFAULT_FROM_EMAIL = 'Cwish Store <noreply@cwishstore.com>'
 
-# Email templates directory
-TEMPLATES[0]['DIRS'] = [os.path.join(BASE_DIR, 'templates')]
+# Email templates are configured in TEMPLATES setting above

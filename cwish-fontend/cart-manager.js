@@ -62,8 +62,24 @@ class CartManager {
         return null;
     }
 
-    async addToCart(quantity = 1) {
+    async addToCart(quantity = 1, printPosition = '', personalization = '') {
         try {
+            // Get print position from form if not provided
+            if (!printPosition) {
+                const printPositionSelect = document.getElementById('variation-selector-0');
+                if (printPositionSelect && printPositionSelect.value) {
+                    printPosition = printPositionSelect.options[printPositionSelect.selectedIndex].text;
+                }
+            }
+
+            // Get personalization from form if not provided
+            if (!personalization) {
+                const personalizationInput = document.getElementById('perso-input-1389779696558');
+                if (personalizationInput && personalizationInput.value.trim()) {
+                    personalization = personalizationInput.value.trim();
+                }
+            }
+
             const response = await fetch(`${this.apiBase}/cart/add_to_cart/`, {
                 method: 'POST',
                 headers: {
@@ -71,7 +87,11 @@ class CartManager {
                     'X-CSRFToken': this.getCSRFToken()
                 },
                 credentials: 'include',
-                body: JSON.stringify({ quantity: quantity })
+                body: JSON.stringify({
+                    quantity: quantity,
+                    print_position: printPosition,
+                    personalization: personalization
+                })
             });
 
             if (response.ok) {
@@ -405,6 +425,63 @@ class CartManager {
                     productName.textContent = item.product.name;
                 }
 
+                // Hiển thị print position và personalization nếu có (chỉ cho main products)
+                const existingAdditionalInfo = cartItem.querySelector('.cart__item__additional_info');
+                if (existingAdditionalInfo) {
+                    existingAdditionalInfo.remove();
+                }
+
+                // Create container for additional info
+                let additionalInfoContainer = null;
+
+                // Hiển thị print position nếu có (chỉ cho main products)
+                if (item.print_position) {
+                    if (!additionalInfoContainer) {
+                        additionalInfoContainer = document.createElement('div');
+                        additionalInfoContainer.className = 'cart__item__additional_info';
+                        additionalInfoContainer.style.cssText = 'margin-top: 5px;';
+                    }
+
+                    const printPositionElement = document.createElement('div');
+                    printPositionElement.className = 'cart__item__print_position';
+                    printPositionElement.textContent = `Print: ${item.print_position}`;
+                    printPositionElement.style.cssText = `
+                        font-size: 12px;
+                        color: #666;
+                        font-style: italic;
+                        margin-bottom: 2px;
+                    `;
+                    additionalInfoContainer.appendChild(printPositionElement);
+                }
+
+                // Hiển thị personalization nếu có
+                if (item.personalization && item.personalization.trim()) {
+                    if (!additionalInfoContainer) {
+                        additionalInfoContainer = document.createElement('div');
+                        additionalInfoContainer.className = 'cart__item__additional_info';
+                        additionalInfoContainer.style.cssText = 'margin-top: 5px;';
+                    }
+
+                    const personalizationElement = document.createElement('div');
+                    personalizationElement.className = 'cart__item__personalization';
+                    personalizationElement.textContent = `Personal: "${item.personalization}"`;
+                    personalizationElement.style.cssText = `
+                        font-size: 12px;
+                        color: #666;
+                        font-style: italic;
+                        margin-bottom: 2px;
+                    `;
+                    additionalInfoContainer.appendChild(personalizationElement);
+                }
+
+                // Add additional info container if it has content
+                if (additionalInfoContainer && additionalInfoContainer.children.length > 0) {
+                    const productBody = cartItem.querySelector('.cart__item__body');
+                    if (productBody && productName) {
+                        productBody.insertBefore(additionalInfoContainer, productName.nextSibling);
+                    }
+                }
+
                 const productImage = cartItem.querySelector('.cart__item__image img');
                 if (productImage) {
                     if (item.product.image) {
@@ -631,48 +708,130 @@ document.addEventListener('DOMContentLoaded', function() {
     // Xử lý nút Add to Cart cho sản phẩm chính
     const addToCartBtn = document.querySelector('.add-to-cart:not(#add-bonus-to-cart)');
     console.log('Found Add to Cart button:', addToCartBtn);
-    
-    if (addToCartBtn) {
-        addToCartBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            console.log('Add to Cart button clicked!');
 
-            try {
-                // Kiểm tra radio button quantity nào được chọn
-                const selectedQuantity = document.querySelector('input[name="quantity"]:checked');
-                console.log('Selected quantity radio:', selectedQuantity);
+    // Add listener to clear validation errors when print position changes
+    const printPositionSelect = document.getElementById('variation-selector-0');
+    if (printPositionSelect) {
+        printPositionSelect.addEventListener('change', function() {
+            const errorElement = document.getElementById('error-variation-selector-0');
+            // Valid print position values: Front Side (5645474909) or Back Side (5645474901)
+            const validPrintPositionValues = ['5645474909', '5645474901'];
 
-                if (selectedQuantity) {
-                    const quantityValue = selectedQuantity.value;
-                    console.log('Selected quantity value:', quantityValue);
-
-                    // Xác định hành động dựa trên quantity được chọn
-                    if (selectedQuantity.id === 'quantity1') {
-                        // Quantity 1: Thêm 1 single product
-                        console.log('Adding 1 single product to cart');
-                        await window.cartManager.addToCart(1);
-                    } else if (selectedQuantity.id === 'quantity2') {
-                        // Quantity 2: Thêm 2 single products
-                        console.log('Adding 2 single products to cart');
-                        await window.cartManager.addToCart(2);
-                    } else if (selectedQuantity.id === 'quantity3') {
-                        // Quantity 3: Thêm 1 digital product (bonus product)
-                        console.log('Adding 1 digital product to cart');
-                        await window.cartManager.addBonusToCart(1);
-                    } else {
-                        // Fallback: thêm 1 single product
-                        console.log('Unknown quantity selection, adding 1 single product as fallback');
-                        await window.cartManager.addToCart(1);
-                    }
-                } else {
-                    // Không có radio nào được chọn, fallback
-                    console.log('No quantity selected, adding 1 single product as fallback');
-                    await window.cartManager.addToCart(1);
-                }
-            } catch (error) {
-                console.error('Error in Add to Cart click handler:', error);
+            if (errorElement) {
+                // Always hide error when user changes selection
+                errorElement.classList.add('wt-validation__message--is-hidden');
             }
+
+            // Reset border color
+            printPositionSelect.style.borderColor = '';
+
+            console.log('Print position changed to:', printPositionSelect.value);
         });
+    }
+    
+                    if (addToCartBtn) {
+                    addToCartBtn.addEventListener('click', async function(e) {
+                        console.log('Add to Cart button clicked!');
+
+                        try {
+                            // Kiểm tra radio button quantity nào được chọn
+                            const selectedQuantity = document.querySelector('input[name="quantity"]:checked');
+                            console.log('Selected quantity radio:', selectedQuantity);
+
+                            if (selectedQuantity) {
+                                const quantityValue = selectedQuantity.value;
+                                console.log('Selected quantity value:', quantityValue, 'for', selectedQuantity.id);
+
+                                // Get print position
+                                let printPosition = '';
+                                const printPositionSelect = document.getElementById('variation-selector-0');
+                                if (printPositionSelect && printPositionSelect.value) {
+                                    printPosition = printPositionSelect.options[printPositionSelect.selectedIndex].text;
+                                }
+                                console.log('Selected print position:', printPosition, '(value:', printPositionSelect.value + ')');
+
+                                // Get personalization
+                                let personalization = '';
+                                const personalizationInput = document.getElementById('perso-input-1389779696558');
+                                if (personalizationInput && personalizationInput.value.trim()) {
+                                    personalization = personalizationInput.value.trim();
+                                }
+                                console.log('Selected personalization:', personalization);
+
+                                // VALIDATION: Check if print position is required
+                                // Only quantity1 and quantity2 require print position (main products)
+                                // quantity3 is for bonus digital product and doesn't require print position
+                                // This ensures customers select print position for physical products that need printing
+                                const requiresPrintPosition = selectedQuantity.id === 'quantity1' || selectedQuantity.id === 'quantity2';
+                                // Valid print position values: Front Side (5645474909) or Back Side (5645474901)
+                                const validPrintPositionValues = ['5645474909', '5645474901'];
+                                const hasValidPrintPosition = printPositionSelect && validPrintPositionValues.includes(printPositionSelect.value);
+
+                                if (requiresPrintPosition && !hasValidPrintPosition) {
+                                    // Prevent form submission and show error
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    // Show error message
+                                    const errorElement = document.getElementById('error-variation-selector-0');
+                                    if (errorElement) {
+                                        errorElement.classList.remove('wt-validation__message--is-hidden');
+                                    }
+
+                                    // Highlight the select field
+                                    if (printPositionSelect) {
+                                        printPositionSelect.style.borderColor = '#dc3545';
+                                        printPositionSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        printPositionSelect.focus();
+                                    }
+
+                                    // Error message is already shown below the select field
+                                    // No alert needed - user can see the red error message and highlighted field
+
+                                    console.log('Print position validation failed - valid options are: 5645474909 (Front Side) or 5645474901 (Back Side)');
+                                    return false;
+                                }
+
+                                // Clear any previous error if validation passes
+                                const errorElement = document.getElementById('error-variation-selector-0');
+                                if (errorElement) {
+                                    errorElement.classList.add('wt-validation__message--is-hidden');
+                                }
+                                if (printPositionSelect) {
+                                    printPositionSelect.style.borderColor = '';
+                                }
+
+                                // Prevent default to handle the logic ourselves
+                                e.preventDefault();
+
+                                // Xác định hành động dựa trên quantity được chọn
+                                if (selectedQuantity.id === 'quantity1') {
+                                    // Quantity 1: Thêm 1 single product
+                                    console.log('Adding 1 single product to cart with print position and personalization');
+                                    await window.cartManager.addToCart(1, printPosition, personalization);
+                                } else if (selectedQuantity.id === 'quantity2') {
+                                    // Quantity 2: Thêm 2 single products
+                                    console.log('Adding 2 single products to cart with print position and personalization');
+                                    await window.cartManager.addToCart(2, printPosition, personalization);
+                                } else if (selectedQuantity.id === 'quantity3') {
+                                    // Quantity 3: Thêm 1 digital product (bonus product)
+                                    console.log('Adding 1 digital product to cart');
+                                    await window.cartManager.addBonusToCart(1);
+                                } else {
+                                    // Fallback: thêm 1 single product
+                                    console.log('Unknown quantity selection, adding 1 single product as fallback');
+                                    await window.cartManager.addToCart(1, printPosition, personalization);
+                                }
+                            } else {
+                                // Không có radio nào được chọn, fallback
+                                console.log('No quantity selected, adding 1 single product as fallback');
+                                e.preventDefault();
+                                await window.cartManager.addToCart(1);
+                            }
+                        } catch (error) {
+                            console.error('Error in Add to Cart click handler:', error);
+                        }
+                    });
         console.log('Event listener attached to Add to Cart button');
     } else {
         console.error('Add to Cart button not found!');

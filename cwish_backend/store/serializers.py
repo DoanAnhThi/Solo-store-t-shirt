@@ -5,7 +5,7 @@ from .models import SingleProduct, UserCart, Order, Contact, DigitalBonusProduct
 class SingleProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = SingleProduct
-        fields = ['id', 'name', 'description', 'price', 'currency', 'image', 'is_active']
+        fields = ['id', 'name', 'description', 'price', 'currency', 'image', 'is_active', 'print_position']
 
 
 class DigitalBonusProductSerializer(serializers.ModelSerializer):
@@ -17,10 +17,10 @@ class DigitalBonusProductSerializer(serializers.ModelSerializer):
 class UserCartSerializer(serializers.ModelSerializer):
     product = SingleProductSerializer(read_only=True)
     total_price = serializers.ReadOnlyField()
-    
+
     class Meta:
         model = UserCart
-        fields = ['id', 'product', 'quantity', 'total_price', 'created_at', 'updated_at']
+        fields = ['id', 'product', 'quantity', 'total_price', 'print_position', 'personalization', 'created_at', 'updated_at']
 
 
 class BonusCartSerializer(serializers.ModelSerializer):
@@ -34,6 +34,8 @@ class BonusCartSerializer(serializers.ModelSerializer):
 
 class AddToCartSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=1, default=1)
+    print_position = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    personalization = serializers.CharField(max_length=256, required=False, allow_blank=True)
 
 
 class UpdateCartQuantitySerializer(serializers.Serializer):
@@ -58,7 +60,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = [
             'id', 'product_type', 'single_product', 'bonus_product',
-            'quantity', 'unit_price', 'total_price', 'product_name', 'product_image'
+            'quantity', 'unit_price', 'total_price', 'print_position', 'personalization', 'product_name', 'product_image'
         ]
 
     def get_product_name(self, obj):
@@ -89,7 +91,8 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'order_items', 'quantity', 'total_amount', 'currency',
             'email', 'first_name', 'last_name', 'address', 'city', 'country', 'postal_code',
-            'phone', 'status', 'main_products', 'bonus_products', 'created_at', 'updated_at'
+            'phone', 'status', 'print_position', 'personalization', 'main_products', 'bonus_products',
+            'shirtigo_order_id', 'shirtigo_response', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
@@ -177,7 +180,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                 single_product=cart_item.product,
                 quantity=cart_item.quantity,
                 unit_price=cart_item.product.price,
-                total_price=cart_item.total_price
+                total_price=cart_item.total_price,
+                print_position=cart_item.print_position,
+                personalization=cart_item.personalization
             )
             total_amount += cart_item.total_price
 
@@ -196,6 +201,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         # Cập nhật tổng tiền cho order
         order.total_amount = total_amount
         order.save()
+
+        # Cập nhật print_position từ order items
+        order.update_print_position_and_personalization()
 
         # Xóa giỏ hàng sau khi đặt hàng
         main_cart_items.delete()

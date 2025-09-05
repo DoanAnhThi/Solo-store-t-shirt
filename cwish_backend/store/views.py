@@ -84,33 +84,39 @@ class UserCartViewSet(viewsets.ModelViewSet):
     def add_to_cart(self, request):
         """Thêm sản phẩm vào giỏ hàng"""
         serializer = AddToCartSerializer(data=request.data)
-        
+
         if serializer.is_valid():
             quantity = serializer.validated_data['quantity']
-            
+            print_position = serializer.validated_data.get('print_position', '')
+            personalization = serializer.validated_data.get('personalization', '')
+
             # Lấy sản phẩm duy nhất
             product = SingleProduct.objects.filter(is_active=True).first()
             if not product:
                 return Response(
-                    {'error': 'No active product available'}, 
+                    {'error': 'No active product available'},
                     status=status.HTTP_404_NOT_FOUND
                 )
-            
+
             # Kiểm tra xem đã có trong giỏ hàng chưa
             cart_item, created = UserCart.objects.get_or_create(
                 user=request.user,
                 product=product,
-                defaults={'quantity': quantity}
+                defaults={'quantity': quantity, 'print_position': print_position, 'personalization': personalization}
             )
-            
+
             if not created:
-                # Cập nhật số lượng nếu đã tồn tại
+                # Cập nhật số lượng, print position và personalization nếu đã tồn tại
                 cart_item.quantity += quantity
+                if print_position:  # Chỉ cập nhật nếu có print position mới
+                    cart_item.print_position = print_position
+                if personalization:  # Chỉ cập nhật nếu có personalization mới
+                    cart_item.personalization = personalization
                 cart_item.save()
-            
+
             # Trả về giỏ hàng đã cập nhật
             return self.list(request)
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
@@ -297,10 +303,12 @@ class OrderViewSet(viewsets.ModelViewSet):
             # Gửi order đến Shirtigo API (chỉ gửi primary order)
             shirtigo_response = self._send_to_shirtigo(primary_order)
 
-            # Cập nhật order với Shirtigo response
+            # Cập nhật order với Shirtigo response và status
             if shirtigo_response and 'id' in shirtigo_response:
                 primary_order.shirtigo_order_id = shirtigo_response['id']
                 primary_order.shirtigo_response = shirtigo_response
+                primary_order.update_status_after_payment()  # Cập nhật status thành processing
+            else:
                 primary_order.save()
 
             # Gửi email xác nhận đơn hàng
@@ -399,42 +407,91 @@ class OrderViewSet(viewsets.ModelViewSet):
         """Gửi email xác nhận đơn hàng"""
         try:
             print(f"📧 Gửi email xác nhận đơn hàng cho {order.email}...")
+            print(f"   Order ID: {order.id}")
+            print(f"   Email backend: {settings.EMAIL_BACKEND}")
 
             # Load order items để đảm bảo chúng được fetch từ database
             order_items = order.order_items.select_related('single_product', 'bonus_product').all()
+            print(f"   Order items count: {order_items.count()}")
 
             # Serialize order items với request context để có URL tuyệt đối
             from .serializers import OrderItemSerializer
-            serializer = OrderItemSerializer(order_items, many=True, context={'request': None})
-            serialized_items = serializer.data
+            try:
+                # Create a mock request object for URL generation
+                from django.http import HttpRequest
+                mock_request = HttpRequest()
+                mock_request.META = {'SERVER_NAME': 'localhost', 'SERVER_PORT': '8000', 'wsgi.url_scheme': 'http'}
+                serializer = OrderItemSerializer(order_items, many=True, context={'request': mock_request})
+                serialized_items = serializer.data
+                print(f"   Serialized items successfully: {len(serialized_items)} items")
+
+                # Debug: In ra thông tin print_position và personalization của từng item
+                for i, item in enumerate(serialized_items):
+                    print(f"   Item {i+1}: {item.get('product_name', 'N/A')} - Type: {item.get('product_type', 'N/A')}")
+                    print(f"     Print Position: {item.get('print_position', 'None')}")
+                    print(f"     Personalization: {item.get('personalization', 'None')}")
+                    print(f"     Raw item keys: {list(item.keys())}")
+                    if 'single_product' in item and item['single_product']:
+                        print(f"     Has single_product: {item['single_product'].get('name', 'N/A')}")
+                    if 'bonus_product' in item and item['bonus_product']:
+                        print(f"     Has bonus_product: {item['bonus_product'].get('name', 'N/A')}")
+
+            except Exception as serialize_error:
+                print(f"❌ Error serializing order items: {serialize_error}")
+                import traceback
+                traceback.print_exc()
+                return False
 
             # Render email template
-            html_content = render_to_string('emails/order_confirmation.html', {
-                'order': order,
-                'order_items': serialized_items,
-                'site_url': settings.SITE_URL,
-            })
+            try:
+                html_content = render_to_string('emails/order_confirmation.html', {
+                    'order': order,
+                    'order_items': serialized_items,
+                    'site_url': settings.SITE_URL,
+                })
+                print(f"   Email template rendered successfully, content length: {len(html_content)}")
+            except Exception as template_error:
+                print(f"❌ Error rendering email template: {template_error}")
+                return False
 
             # Tạo subject email
             subject = f'Order Confirmation - Order #{order.id} - Cwish Store'
 
             # Tạo email message
-            email = EmailMessage(
-                subject=subject,
-                body=html_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[order.email],
-            )
-            email.content_subtype = 'html'  # Đánh dấu đây là HTML email
+            try:
+                email = EmailMessage(
+                    subject=subject,
+                    body=html_content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[order.email],
+                )
+                email.content_subtype = 'html'  # Đánh dấu đây là HTML email
+                print(f"   Email message created successfully")
+                print(f"   From: {settings.DEFAULT_FROM_EMAIL}")
+                print(f"   To: {order.email}")
+                print(f"   Subject: {subject}")
+            except Exception as email_error:
+                print(f"❌ Error creating email message: {email_error}")
+                return False
 
             # Gửi email
-            email.send()
-
-            print(f"✅ Email xác nhận đã được gửi thành công đến {order.email}")
-            return True
+            try:
+                result = email.send()
+                print(f"✅ Email send result: {result}")
+                if result > 0:
+                    print(f"✅ Email xác nhận đã được gửi thành công đến {order.email}")
+                    return True
+                else:
+                    print(f"⚠️ Email send returned 0 - might not have been sent")
+                    return False
+            except Exception as send_error:
+                print(f"❌ Error sending email: {send_error}")
+                return False
 
         except Exception as e:
-            print(f"❌ Lỗi khi gửi email xác nhận: {e}")
+            print(f"❌ Unexpected error in _send_order_confirmation_email: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
     @action(detail=True, methods=['patch'])
@@ -453,6 +510,32 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.save()
         serializer = OrderSerializer(order)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    @csrf_exempt
+    def test_email(self, request):
+        """Test endpoint để gửi email cho order cuối cùng"""
+        try:
+            # Lấy order cuối cùng
+            last_order = Order.objects.last()
+            if not last_order:
+                return Response({'error': 'No orders found'}, status=status.HTTP_404_NOT_FOUND)
+
+            print(f"🧪 Testing email for Order #{last_order.id}")
+
+            # Gửi email
+            email_sent = self._send_order_confirmation_email(last_order)
+
+            return Response({
+                'success': email_sent,
+                'order_id': str(last_order.id),
+                'email': last_order.email,
+                'message': 'Email test completed - check Django console logs'
+            })
+
+        except Exception as e:
+            print(f"❌ Error in test_email: {e}")
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     @csrf_exempt

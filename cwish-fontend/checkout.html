@@ -906,10 +906,23 @@
                 cartData.items.forEach(item => {
                     const cartItem = document.createElement('div');
                     cartItem.className = 'cart-item';
+
+                    // Build additional info HTML
+                    let additionalInfoHtml = '';
+
+                    if (item.print_position) {
+                        additionalInfoHtml += `<div class="cart-item-print-position" style="font-size: 12px; color: #666; font-style: italic; margin: 2px 0; padding: 2px 0;">Print: ${item.print_position}</div>`;
+                    }
+
+                    if (item.personalization && item.personalization.trim()) {
+                        additionalInfoHtml += `<div class="cart-item-personalization" style="font-size: 12px; color: #666; font-style: italic; margin: 2px 0; padding: 2px 0;">Personal: "${item.personalization}"</div>`;
+                    }
+
                     cartItem.innerHTML = `
                         <img src="${item.product.image}" alt="${item.product.name}">
                         <div class="cart-item-details">
                             <div class="cart-item-name">${item.product.name}</div>
+                            ${additionalInfoHtml}
                             <div class="cart-item-qty">Qty: ${item.quantity}</div>
                             <div class="cart-item-price">$${item.total_price}</div>
                         </div>

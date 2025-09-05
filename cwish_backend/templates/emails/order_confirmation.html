@@ -138,18 +138,31 @@
                             {% else %}
                                 Unknown Product
                             {% endif %}
-                            {% if item.product_type == 'bonus' %}
-
                         </h4>
-                        <p style="margin: 0; color: #6c757d; font-size: 14px;">
-                            {% if item.single_product and item.single_product.description %}
-                            {{ item.single_product.description|truncatechars:80 }}
-                            {% elif item.bonus_product and item.bonus_product.description %}
-                            {{ item.bonus_product.description|truncatechars:80 }}
-                            {% else %}
-                            Product description not available
+
+                        {% if item.product_type == 'single' %}
+                            {% if item.print_position %}
+                            <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                                Print Position: {{ item.print_position }}
+                            </p>
                             {% endif %}
-                        </p>
+                            {% if item.personalization %}
+                            <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                                Personalization: "{{ item.personalization }}"
+                            </p>
+                            {% endif %}
+                            {% if item.single_product and item.single_product.description %}
+                            <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                                {{ item.single_product.description|truncatechars:80 }}
+                            </p>
+                            {% endif %}
+                        {% elif item.product_type == 'bonus' %}
+                            {% if item.bonus_product and item.bonus_product.description %}
+                            <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                                {{ item.bonus_product.description|truncatechars:80 }}
+                            </p>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
 

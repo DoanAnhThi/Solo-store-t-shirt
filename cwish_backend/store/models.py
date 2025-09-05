@@ -12,6 +12,7 @@ class SingleProduct(models.Model):
     currency = models.CharField(max_length=3, default='USD')
     image = models.ImageField(upload_to='product/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
+    print_position = models.CharField(max_length=50, blank=True, null=True, help_text="Position to print on the product (e.g., Front, Back, Left Sleeve)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -48,6 +49,8 @@ class UserCart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart')
     product = models.ForeignKey(SingleProduct, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)], default=1)
+    print_position = models.CharField(max_length=50, blank=True, null=True, help_text="Selected print position for this cart item")
+    personalization = models.TextField(max_length=256, blank=True, null=True, help_text="Personalization text for this cart item")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -102,6 +105,12 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     total_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+
+    # Print position for main products (only applicable for single products)
+    print_position = models.CharField(max_length=50, blank=True, null=True, help_text="Selected print position for this order item")
+
+    # Personalization for order items
+    personalization = models.TextField(max_length=256, blank=True, null=True, help_text="Personalization text for this order item")
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -183,6 +192,12 @@ class Order(models.Model):
     shirtigo_order_id = models.CharField(max_length=100, blank=True, null=True)
     shirtigo_response = models.JSONField(blank=True, null=True)
 
+    # Print position từ order items (computed field)
+    print_position = models.CharField(max_length=50, blank=True, null=True, help_text="Print position from order items")
+
+    # Personalization field
+    personalization = models.TextField(max_length=256, blank=True, null=True, help_text="Custom personalization text from customer")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -217,6 +232,35 @@ class Order(models.Model):
     def get_bonus_products(self):
         """Trả về danh sách bonus products"""
         return self.order_items.filter(product_type='bonus')
+
+    def update_print_position_and_personalization(self):
+        """Cập nhật print_position và personalization từ cart data"""
+        # Get print position from order items (only for single products)
+        print_positions = []
+        personalizations = []
+
+        for item in self.order_items.filter(product_type='single'):
+            if item.print_position:
+                print_positions.append(item.print_position)
+            if item.personalization:
+                personalizations.append(item.personalization)
+
+        # Combine unique print positions
+        if print_positions:
+            self.print_position = ', '.join(set(print_positions))
+
+        # Combine personalizations (if multiple, join them)
+        if personalizations:
+            self.personalization = ' | '.join(set(personalizations))
+
+        # Save the order
+        self.save(update_fields=['print_position', 'personalization'])
+
+    def update_status_after_payment(self):
+        """Cập nhật status thành processing sau khi thanh toán thành công"""
+        if self.status == 'pending':
+            self.status = 'processing'
+            self.save(update_fields=['status'])
 
 
 class Contact(models.Model):
